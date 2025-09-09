@@ -22,8 +22,6 @@ const memberSchema = z.object({
   birth_municipality: z.string().optional(),
   birth_date: z.string().optional(),
   phone: z.string().optional(),
-  profession: z.string().optional(),
-  education_level: z.string().optional(),
   marital_status: z.enum(["solteiro", "casado", "divorciado", "viuvo"], {
     required_error: "Estado civil é obrigatório",
   }).default("solteiro"),

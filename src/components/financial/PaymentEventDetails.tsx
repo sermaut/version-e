@@ -84,11 +84,11 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   }
 
   return (
-    <Card className="w-full h-full flex flex-col">
+    <Card className="w-full h-full flex flex-col max-w-none">
       <CardHeader className="flex-shrink-0">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Calendar className="h-4 w-4" />
               {event.title}
             </CardTitle>
