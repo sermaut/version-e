@@ -84,12 +84,12 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-4 w-4" />
               {event.title}
             </CardTitle>
             <CardDescription className="mt-2">
@@ -141,8 +141,8 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
         </div>
       </CardHeader>
       
-      <CardContent>
-        <Tabs defaultValue="completed" className="w-full">
+      <CardContent className="flex-1 overflow-hidden">
+        <Tabs defaultValue="completed" className="w-full h-full flex flex-col">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="completed" className="relative">
               Concluído

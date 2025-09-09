@@ -21,7 +21,7 @@ interface GroupCardProps {
 
 export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
   return (
-    <Card className="card-elevated transition-smooth hover:shadow-medium">
+    <Card className="card-elevated transition-smooth hover:shadow-medium border-l-4 border-l-primary bg-background/60 backdrop-blur-sm">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
@@ -46,23 +46,6 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
 
         {/* Info */}
         <div className="space-y-3 mb-6">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Direção:</span>
-            <span className="font-medium text-foreground capitalize">
-              {group.direction}
-            </span>
-          </div>
-          
-          {group.max_members && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Limite de Membros:</span>
-              <div className="flex items-center space-x-1">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium text-foreground">{group.max_members}</span>
-              </div>
-            </div>
-          )}
-
           {group.access_code && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Código de Acesso:</span>

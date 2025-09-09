@@ -137,37 +137,69 @@ export const OptimizedMembersTable = memo(({
       <table className="w-full">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-              Membro
+            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-16">
+              Nº.
+            </th>
+            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-20">
+              Foto
             </th>
             <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-              Cargo
+              Nome Completo
             </th>
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-              Partição
-            </th>
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-              Telefone
-            </th>
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-              Status
-            </th>
-            {showActions && (
-              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                Ações
-              </th>
-            )}
           </tr>
         </thead>
         <tbody>
-          {memoizedMembers.map((member) => (
-            <MemberRow
-              key={member.id}
-              member={member}
-              onMemberView={onMemberView}
-              onMemberEdit={onMemberEdit}
-              showActions={showActions}
-            />
+          {memoizedMembers.map((member, index) => (
+            <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
+              <td className="px-4 py-3 text-center text-sm text-muted-foreground">
+                {index + 1}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <Avatar 
+                  className="w-12 h-12 mx-auto cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => {
+                    if (member.profile_image_url) {
+                      const img = new Image();
+                      img.src = member.profile_image_url;
+                      const newWindow = window.open('', '_blank');
+                      if (newWindow) {
+                        newWindow.document.write(`
+                          <html>
+                            <head><title>${member.name}</title></head>
+                            <body style="margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;">
+                              <img src="${member.profile_image_url}" style="max-width:100%;max-height:100%;object-fit:contain;" />
+                            </body>
+                          </html>
+                        `);
+                      }
+                    }
+                  }}
+                >
+                  <AvatarImage src={member.profile_image_url} />
+                  <AvatarFallback className="text-sm">
+                    {member.name
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+              </td>
+              <td className="px-4 py-3">
+                <button
+                  className="text-left hover:text-primary transition-colors font-medium"
+                  onClick={() => onMemberView(member.id)}
+                >
+                  {member.name}
+                </button>
+                {member.member_code && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Código: {member.member_code}
+                  </div>
+                )}
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>

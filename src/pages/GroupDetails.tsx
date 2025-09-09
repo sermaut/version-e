@@ -272,57 +272,21 @@ export default function GroupDetails() {
         {/* Stats Cards - removed as requested */}
 
         {/* Tabs */}
-        <Tabs defaultValue="members" className="space-y-6">
+        <Tabs defaultValue="info" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="info" className="flex items-center space-x-2">
+              <FileText className="w-4 h-4" />
+              <span>Informações</span>
+            </TabsTrigger>
             <TabsTrigger value="members" className="flex items-center space-x-2">
               <Users className="w-4 h-4" />
               <span>Membros</span>
             </TabsTrigger>
             <TabsTrigger value="financial" className="flex items-center space-x-2">
               <Activity className="w-4 h-4" />
-              <span>Financeiro</span>
-            </TabsTrigger>
-            <TabsTrigger value="info" className="flex items-center space-x-2">
-              <FileText className="w-4 h-4" />
-              <span>Informações</span>
+              <span>Finanças</span>
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="members" className="space-y-6">
-            {/* Search and Filters */}
-            <Card className="card-elevated">
-              <div className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Buscar membros..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Button variant="outline">
-                    <Filter className="w-4 h-4" />
-                    Filtros
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Members Table - Optimized */}
-            <Card className="card-elevated p-0">
-              <OptimizedMembersTable 
-                members={filteredMembers}
-                onMemberView={handleMemberView}
-                onMemberEdit={handleMemberEdit}
-              />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="financial" className="space-y-6">
-            <FinancialDashboard groupId={id!} />
-          </TabsContent>
 
           <TabsContent value="info" className="space-y-6">
             <Card className="card-elevated">
@@ -414,6 +378,42 @@ export default function GroupDetails() {
                 </div>
               </div>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="members" className="space-y-6">
+            {/* Search and Filters */}
+            <Card className="card-elevated">
+              <div className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Buscar membros..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button variant="outline">
+                    <Filter className="w-4 h-4" />
+                    Filtros
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Members Table - Optimized */}
+            <Card className="card-elevated p-0">
+              <OptimizedMembersTable 
+                members={filteredMembers}
+                onMemberView={handleMemberView}
+                onMemberEdit={handleMemberEdit}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="financial" className="space-y-6">
+            <FinancialDashboard groupId={id!} />
           </TabsContent>
         </Tabs>
       </div>

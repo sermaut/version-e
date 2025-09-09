@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Camera, Upload } from "lucide-react";
+import { ImageCropper } from "./ImageCropper";
 
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -48,6 +49,8 @@ interface MemberFormProps {
 export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSuccess }: MemberFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
+  const [tempImageUrl, setTempImageUrl] = useState<string>("");
+  const [showCropper, setShowCropper] = useState(false);
   const [memberLimitInfo, setMemberLimitInfo] = useState<{
     currentCount: number;
     limit: number;
@@ -123,10 +126,15 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileImageUrl(e.target?.result as string);
+        setTempImageUrl(e.target?.result as string);
+        setShowCropper(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCroppedImage = (croppedImage: string) => {
+    setProfileImageUrl(croppedImage);
   };
 
   const onSubmit = async (data: MemberFormData) => {
@@ -170,11 +178,14 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       }
       
       onSuccess?.();
-      if (effectiveGroupId) {
-        navigate(`/groups/${effectiveGroupId}`);
-      } else {
-        navigate("/groups");
-      }
+      // Reset form for adding another member
+      form.reset({
+        name: "",
+        group_id: effectiveGroupId || "",
+        marital_status: "solteiro",
+        role: "membro",
+      });
+      setProfileImageUrl("");
     } catch (error: any) {
       console.error("Erro ao salvar membro:", error);
       
@@ -315,35 +326,6 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="profession"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profissão</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite a profissão" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="education_level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nível de Escolaridade</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite o nível de escolaridade" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
@@ -479,6 +461,14 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
             </div>
           </form>
         </Form>
+
+        {/* Image Cropper */}
+        <ImageCropper
+          open={showCropper}
+          onOpenChange={setShowCropper}
+          imageSrc={tempImageUrl}
+          onCrop={handleCroppedImage}
+        />
       </CardContent>
     </Card>
   );
