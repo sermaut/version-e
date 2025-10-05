@@ -514,6 +514,47 @@ export type Database = {
           },
         ]
       }
+      weekly_program_content: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          expires_at: string
+          group_id: string
+          id: string
+          image_url: string
+          is_deleted: boolean
+          title: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          expires_at?: string
+          group_id: string
+          id?: string
+          image_url: string
+          is_deleted?: boolean
+          title: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          expires_at?: string
+          group_id?: string
+          id?: string
+          image_url?: string
+          is_deleted?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_program_content_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -522,6 +563,10 @@ export type Database = {
       generate_admin_code: {
         Args: { prefix?: string }
         Returns: string
+      }
+      soft_delete_expired_weekly_programs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

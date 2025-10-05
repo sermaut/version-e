@@ -44,7 +44,7 @@ const MemberRow = memo(({
 
   return (
     <tr className="border-b border-border hover:bg-muted/50 transition-smooth">
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 border-r border-border/50">
         <div className="flex items-center space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src={member.profile_image_url} />
@@ -52,29 +52,24 @@ const MemberRow = memo(({
           </Avatar>
           <div>
             <div className="font-medium text-foreground">{member.name}</div>
-            {member.member_code && (
-              <div className="text-xs text-muted-foreground">
-                Código: {member.member_code}
-              </div>
-            )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 border-r border-border/50">
         {member.role && (
           <Badge variant="secondary" className="capitalize">
             {member.role.replace('_', ' ')}
           </Badge>
         )}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 border-r border-border/50">
         {member.partition && (
           <span className="text-sm capitalize text-muted-foreground">
             {member.partition}
           </span>
         )}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 border-r border-border/50">
         {member.phone && (
           <div className="flex items-center space-x-1">
             <Phone className="w-3 h-3 text-muted-foreground" />
@@ -82,7 +77,7 @@ const MemberRow = memo(({
           </div>
         )}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 border-r border-border/50">
         <Badge variant={member.is_active ? "default" : "secondary"}>
           {member.is_active ? "Ativo" : "Inativo"}
         </Badge>
@@ -137,10 +132,10 @@ export const OptimizedMembersTable = memo(({
       <table className="w-full">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-16">
+            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
               Nº.
             </th>
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-20">
+            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-20 border-r border-border/50">
               Foto
             </th>
             <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
@@ -151,10 +146,10 @@ export const OptimizedMembersTable = memo(({
         <tbody>
           {memoizedMembers.map((member, index) => (
             <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
-              <td className="px-4 py-3 text-center text-sm text-muted-foreground">
+              <td className="px-4 py-3 text-center text-sm text-muted-foreground border-r border-border/50">
                 {index + 1}
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className="px-4 py-3 text-center border-r border-border/50">
                 <Avatar 
                   className="w-12 h-12 mx-auto cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => {
@@ -193,11 +188,6 @@ export const OptimizedMembersTable = memo(({
                 >
                   {member.name}
                 </button>
-                {member.member_code && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Código: {member.member_code}
-                  </div>
-                )}
               </td>
             </tr>
           ))}

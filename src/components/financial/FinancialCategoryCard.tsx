@@ -35,9 +35,7 @@ export function FinancialCategoryCard({ category, index, onClick }: FinancialCat
   };
 
   const getBalanceColor = () => {
-    if (balance > 0) return "text-green-600";
-    if (balance < 0) return "text-red-600";
-    return "text-muted-foreground";
+    return "text-foreground";
   };
 
   return (

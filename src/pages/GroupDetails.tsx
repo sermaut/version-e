@@ -26,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { MembersTable } from "@/components/members/MembersTable";
 import { OptimizedMembersTable } from "@/components/members/OptimizedMembersTable";
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
+import { WeeklyProgramUpload } from "@/components/technical/WeeklyProgramUpload";
+import { WeeklyProgramList } from "@/components/technical/WeeklyProgramList";
 
 interface Group {
   id: string;
@@ -66,6 +68,7 @@ export default function GroupDetails() {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshPrograms, setRefreshPrograms] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -92,7 +95,7 @@ export default function GroupDetails() {
           .maybeSingle(),
         supabase
           .from('members')
-          .select('id, name, role, partition, is_active, phone, member_code, profile_image_url')
+          .select('id, name, role, partition, is_active, phone, profile_image_url')
           .eq('group_id', id)
           .order('name')
       ]);
@@ -202,7 +205,7 @@ export default function GroupDetails() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 min-h-screen bg-gradient-subtle">
         {/* Header with breadcrumb */}
         <div className="flex items-center space-x-2 md:space-x-4 mb-4 md:mb-6">
           <Button
@@ -274,21 +277,17 @@ export default function GroupDetails() {
         {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="info" className="flex items-center space-x-2">
-              <FileText className="w-4 h-4" />
-              <span>Informações</span>
+            <TabsTrigger value="info">
+              Informações
             </TabsTrigger>
-            <TabsTrigger value="members" className="flex items-center space-x-2">
-              <Users className="w-4 h-4" />
-              <span>Membros</span>
+            <TabsTrigger value="members">
+              Membros
             </TabsTrigger>
-            <TabsTrigger value="financial" className="flex items-center space-x-2">
-              <Activity className="w-4 h-4" />
-              <span>Finanças</span>
+            <TabsTrigger value="financial">
+              Finanças
             </TabsTrigger>
-            <TabsTrigger value="technical" className="flex items-center space-x-2">
-              <Shield className="w-4 h-4" />
-              <span>Área Técnica</span>
+            <TabsTrigger value="technical">
+              Área Técnica
             </TabsTrigger>
           </TabsList>
 
@@ -423,33 +422,23 @@ export default function GroupDetails() {
           <TabsContent value="technical" className="space-y-6">
             <Tabs defaultValue="program" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="program" className="flex items-center space-x-2">
-                  <FileText className="w-4 h-4" />
-                  <span>Programa Semanal</span>
+                <TabsTrigger value="program">
+                  Programa Semanal
                 </TabsTrigger>
-                <TabsTrigger value="rehearsals" className="flex items-center space-x-2">
-                  <Users className="w-4 h-4" />
-                  <span>Participação nos Ensaios</span>
+                <TabsTrigger value="rehearsals">
+                  Participação nos Ensaios
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="program" className="space-y-4">
-                <Card className="card-elevated">
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Programa Semanal
-                    </h3>
-                    <div className="space-y-4">
-                      <Button className="w-full" variant="outline">
-                        <FileText className="w-4 h-4 mr-2" />
-                        Adicionar Programa
-                      </Button>
-                      <p className="text-muted-foreground text-sm text-center">
-                        Upload de imagens (máx. 2MB) e áudio (máx. 2MB)
-                      </p>
-                    </div>
-                  </div>
-                </Card>
+                <WeeklyProgramUpload 
+                  groupId={id!}
+                  onUploadComplete={() => setRefreshPrograms(prev => prev + 1)}
+                />
+                <WeeklyProgramList 
+                  groupId={id!}
+                  refreshTrigger={refreshPrograms}
+                />
               </TabsContent>
               
               <TabsContent value="rehearsals" className="space-y-4">
