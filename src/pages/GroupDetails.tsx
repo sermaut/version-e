@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Building, 
   MapPin, 
@@ -63,12 +64,23 @@ export default function GroupDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isMember } = useAuth();
   
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshPrograms, setRefreshPrograms] = useState(0);
+
+  // Obter ID do membro atual se for membro
+  const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
+  
+  // Verificar se é líder do grupo
+  const isGroupLeader = group ? (
+    group.president_id === currentMemberId ||
+    group.vice_president_1_id === currentMemberId ||
+    group.vice_president_2_id === currentMemberId
+  ) : false;
 
   useEffect(() => {
     if (id) {
@@ -416,7 +428,11 @@ export default function GroupDetails() {
           </TabsContent>
 
           <TabsContent value="financial" className="space-y-6">
-            <FinancialDashboard groupId={id!} />
+            <FinancialDashboard 
+              groupId={id!} 
+              currentMemberId={currentMemberId}
+              isGroupLeader={isGroupLeader}
+            />
           </TabsContent>
 
           <TabsContent value="technical" className="space-y-6">

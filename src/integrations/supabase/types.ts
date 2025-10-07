@@ -56,12 +56,75 @@ export type Database = {
           },
         ]
       }
+      category_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          category_id: string
+          group_id: string
+          id: string
+          is_active: boolean
+          member_id: string
+          role: Database["public"]["Enums"]["category_role"]
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          category_id: string
+          group_id: string
+          id?: string
+          is_active?: boolean
+          member_id: string
+          role: Database["public"]["Enums"]["category_role"]
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          category_id?: string
+          group_id?: string
+          id?: string
+          is_active?: boolean
+          member_id?: string
+          role?: Database["public"]["Enums"]["category_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_roles_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_roles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_roles_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_roles_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_categories: {
         Row: {
           created_at: string
           description: string | null
           group_id: string
           id: string
+          is_locked: boolean
           name: string
           total_balance: number
           updated_at: string
@@ -71,6 +134,7 @@ export type Database = {
           description?: string | null
           group_id: string
           id?: string
+          is_locked?: boolean
           name: string
           total_balance?: number
           updated_at?: string
@@ -80,6 +144,7 @@ export type Database = {
           description?: string | null
           group_id?: string
           id?: string
+          is_locked?: boolean
           name?: string
           total_balance?: number
           updated_at?: string
@@ -560,6 +625,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_category: {
+        Args: { p_category_id: string; p_member_id: string }
+        Returns: boolean
+      }
       generate_admin_code: {
         Args: { prefix?: string }
         Returns: string
@@ -570,6 +639,7 @@ export type Database = {
       }
     }
     Enums: {
+      category_role: "presidente" | "secretario" | "auxiliar"
       group_direction:
         | "geral"
         | "nacional"
@@ -728,6 +798,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      category_role: ["presidente", "secretario", "auxiliar"],
       group_direction: [
         "geral",
         "nacional",

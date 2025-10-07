@@ -10,9 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 
 interface FinancialDashboardProps {
   groupId: string;
+  currentMemberId?: string;
+  isGroupLeader?: boolean;
 }
 
-export function FinancialDashboard({ groupId }: FinancialDashboardProps) {
+export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader }: FinancialDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const { toast } = useToast();
@@ -28,7 +30,7 @@ export function FinancialDashboard({ groupId }: FinancialDashboardProps) {
       // Otimizar consulta carregando apenas campos necessários
       const { data, error } = await supabase
         .from("financial_categories")
-        .select("id, name, description, total_balance, created_at")
+        .select("id, name, description, total_balance, created_at, is_locked, group_id")
         .eq("group_id", groupId)
         .order("name");
 
@@ -67,6 +69,8 @@ export function FinancialDashboard({ groupId }: FinancialDashboardProps) {
             groupId={groupId} 
             categories={categories}
             onCategoriesUpdate={loadCategories}
+            currentMemberId={currentMemberId}
+            isGroupLeader={isGroupLeader}
           />
         </TabsContent>
         
