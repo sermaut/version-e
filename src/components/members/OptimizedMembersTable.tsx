@@ -1,8 +1,21 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Phone, Eye, Edit, User } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Phone, Eye, Edit, User, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Member {
   id: string;
@@ -20,6 +33,7 @@ interface OptimizedMembersTableProps {
   onMemberView: (memberId: string) => void;
   onMemberEdit?: (memberId: string) => void;
   showActions?: boolean;
+  onMembersDeleted?: () => void;
 }
 
 const MemberRow = memo(({ 
@@ -114,9 +128,59 @@ export const OptimizedMembersTable = memo(({
   members, 
   onMemberView, 
   onMemberEdit,
-  showActions = true 
+  showActions = true,
+  onMembersDeleted
 }: OptimizedMembersTableProps) => {
   const memoizedMembers = useMemo(() => members, [members]);
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
+
+  const toggleMemberSelection = (memberId: string) => {
+    const newSelection = new Set(selectedMembers);
+    if (newSelection.has(memberId)) {
+      newSelection.delete(memberId);
+    } else {
+      newSelection.add(memberId);
+    }
+    setSelectedMembers(newSelection);
+  };
+
+  const toggleAllMembers = () => {
+    if (selectedMembers.size === memoizedMembers.length) {
+      setSelectedMembers(new Set());
+    } else {
+      setSelectedMembers(new Set(memoizedMembers.map(m => m.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      const memberIds = Array.from(selectedMembers);
+      
+      const { error } = await supabase
+        .from("members")
+        .delete()
+        .in("id", memberIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Membros eliminados",
+        description: `${memberIds.length} membro(s) eliminado(s) com sucesso.`,
+      });
+
+      setSelectedMembers(new Set());
+      setShowDeleteDialog(false);
+      onMembersDeleted?.();
+    } catch (error) {
+      console.error("Erro ao eliminar membros:", error);
+      toast({
+        title: "Erro ao eliminar membros",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (memoizedMembers.length === 0) {
     return (
@@ -128,27 +192,56 @@ export const OptimizedMembersTable = memo(({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
-              Nº.
-            </th>
-            <th className="px-3 py-1 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
-              Foto
-            </th>
-            <th className="px-4 py-1 text-left text-sm font-medium text-muted-foreground">
-              Nome Completo
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {memoizedMembers.map((member, index) => (
-            <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
-              <td className="px-2 py-1.5 text-center text-sm text-muted-foreground border-r border-border/50">
-                {index + 1}
-              </td>
+    <div className="space-y-4">
+      {selectedMembers.size > 0 && (
+        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+          <span className="text-sm font-medium">
+            {selectedMembers.size} membro(s) selecionado(s)
+          </span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Eliminar Selecionados
+          </Button>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
+                <Checkbox
+                  checked={selectedMembers.size === memoizedMembers.length && memoizedMembers.length > 0}
+                  onCheckedChange={toggleAllMembers}
+                />
+              </th>
+              <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
+                Nº.
+              </th>
+              <th className="px-3 py-1 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
+                Foto
+              </th>
+              <th className="px-4 py-1 text-left text-sm font-medium text-muted-foreground">
+                Nome Completo
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {memoizedMembers.map((member, index) => (
+              <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
+                <td className="px-2 py-1.5 text-center border-r border-border/50">
+                  <Checkbox
+                    checked={selectedMembers.has(member.id)}
+                    onCheckedChange={() => toggleMemberSelection(member.id)}
+                  />
+                </td>
+                <td className="px-2 py-1.5 text-center text-sm text-muted-foreground border-r border-border/50">
+                  {index + 1}
+                </td>
               <td className="px-3 py-1.5 text-center border-r border-border/50">
                 <Avatar 
                   className="w-9 h-9 mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-md border-2 border-border/50 hover:border-primary/50 shadow-sm"
@@ -283,9 +376,27 @@ export const OptimizedMembersTable = memo(({
                 </button>
               </td>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Membros</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem a certeza que deseja eliminar {selectedMembers.size} membro(s)? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSelected}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }); 
