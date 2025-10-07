@@ -79,7 +79,9 @@ export default function GroupDetails() {
   const isGroupLeader = group ? (
     group.president_id === currentMemberId ||
     group.vice_president_1_id === currentMemberId ||
-    group.vice_president_2_id === currentMemberId
+    group.vice_president_2_id === currentMemberId ||
+    group.secretary_1_id === currentMemberId ||
+    group.secretary_2_id === currentMemberId
   ) : false;
 
   useEffect(() => {
