@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,10 +18,15 @@ const groupSchema = z.object({
   municipality: z.string().min(1, "Município é obrigatório"), 
   direction: z.enum(["geral", "nacional", "provincial", "municipal", "comunal", "seccao", "zona"]),
   president_name: z.string().min(2, "Nome do Presidente é obrigatório"),
+  president_id: z.string().uuid().optional().nullable(),
   vice_president_1_name: z.string().min(2, "Nome do Vice-presidente 1 é obrigatório"),
+  vice_president_1_id: z.string().uuid().optional().nullable(),
   vice_president_2_name: z.string().optional(),
+  vice_president_2_id: z.string().uuid().optional().nullable(),
   secretary_1_name: z.string().min(2, "Nome do Secretário 1 é obrigatório"),
+  secretary_1_id: z.string().uuid().optional().nullable(),
   secretary_2_name: z.string().optional(),
+  secretary_2_id: z.string().uuid().optional().nullable(),
   access_code: z.string().optional(),
 });
 
@@ -42,6 +47,7 @@ const provinces = [
 
 export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [groupMembers, setGroupMembers] = useState<Array<{ id: string; name: string }>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -53,10 +59,15 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
       municipality: initialData.municipality || "",
       direction: initialData.direction || "geral",
       president_name: initialData.president_name || "",
+      president_id: initialData.president_id || null,
       vice_president_1_name: initialData.vice_president_1_name || "",
+      vice_president_1_id: initialData.vice_president_1_id || null,
       vice_president_2_name: initialData.vice_president_2_name || "",
+      vice_president_2_id: initialData.vice_president_2_id || null,
       secretary_1_name: initialData.secretary_1_name || "",
+      secretary_1_id: initialData.secretary_1_id || null,
       secretary_2_name: initialData.secretary_2_name || "",
+      secretary_2_id: initialData.secretary_2_id || null,
       access_code: initialData.access_code || "",
     } : {
       name: "",
@@ -64,13 +75,41 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
       municipality: "",
       direction: "geral",
       president_name: "",
+      president_id: null,
       vice_president_1_name: "",
+      vice_president_1_id: null,
       vice_president_2_name: "",
+      vice_president_2_id: null,
       secretary_1_name: "",
+      secretary_1_id: null,
       secretary_2_name: "",
+      secretary_2_id: null,
       access_code: "",
     },
   });
+
+  // Load group members when editing
+  useEffect(() => {
+    if (isEditing && groupId) {
+      loadGroupMembers();
+    }
+  }, [isEditing, groupId]);
+
+  async function loadGroupMembers() {
+    try {
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, name")
+        .eq("group_id", groupId)
+        .eq("is_active", true)
+        .order("name");
+      
+      if (error) throw error;
+      if (data) setGroupMembers(data);
+    } catch (error) {
+      console.error("Error loading members:", error);
+    }
+  }
 
   const onSubmit = async (data: GroupFormData) => {
     setIsLoading(true);
@@ -79,7 +118,21 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     try {
       // Prepare data for database
       const dbData = {
-        ...data,
+        name: data.name,
+        province: data.province,
+        municipality: data.municipality,
+        direction: data.direction,
+        president_name: data.president_name,
+        president_id: data.president_id || null,
+        vice_president_1_name: data.vice_president_1_name,
+        vice_president_1_id: data.vice_president_1_id || null,
+        vice_president_2_name: data.vice_president_2_name || null,
+        vice_president_2_id: data.vice_president_2_id || null,
+        secretary_1_name: data.secretary_1_name,
+        secretary_1_id: data.secretary_1_id || null,
+        secretary_2_name: data.secretary_2_name || null,
+        secretary_2_id: data.secretary_2_id || null,
+        access_code: data.access_code || null,
       };
       
       console.log("Database data:", dbData);
@@ -280,43 +333,42 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">Liderança do Grupo</h3>
               
-              <FormField
-                control={form.control}
-                name="president_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Presidente</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite o nome do presidente" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              {/* Presidente */}
+              <div className="space-y-2">
+                <FormLabel>Presidente</FormLabel>
+                {isEditing && groupMembers.length > 0 && (
+                  <>
+                    <Select
+                      onValueChange={(memberId) => {
+                        const member = groupMembers.find(m => m.id === memberId);
+                        if (member) {
+                          form.setValue("president_id", memberId);
+                          form.setValue("president_name", member.name);
+                        }
+                      }}
+                      value={form.watch("president_id") || ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecionar membro existente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {groupMembers.map((member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">ou digite o nome manualmente:</p>
+                  </>
                 )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="vice_president_1_name"
+                  name="president_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome do Vice-presidente 1</FormLabel>
                       <FormControl>
-                        <Input placeholder="Digite o nome do vice-presidente 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="vice_president_2_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Vice-presidente 2 (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Digite o nome do vice-presidente 2" {...field} />
+                        <Input placeholder="Digite o nome do presidente" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -325,33 +377,179 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="secretary_1_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Secretário 1</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Digite o nome do secretário 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                {/* Vice-presidente 1 */}
+                <div className="space-y-2">
+                  <FormLabel>Vice-presidente 1</FormLabel>
+                  {isEditing && groupMembers.length > 0 && (
+                    <>
+                      <Select
+                        onValueChange={(memberId) => {
+                          const member = groupMembers.find(m => m.id === memberId);
+                          if (member) {
+                            form.setValue("vice_president_1_id", memberId);
+                            form.setValue("vice_president_1_name", member.name);
+                          }
+                        }}
+                        value={form.watch("vice_president_1_id") || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar membro" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groupMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
+                    </>
                   )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="vice_president_1_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Nome do vice-presidente 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="secretary_2_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Secretário 2 (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Digite o nome do secretário 2" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                {/* Vice-presidente 2 */}
+                <div className="space-y-2">
+                  <FormLabel>Vice-presidente 2 (Opcional)</FormLabel>
+                  {isEditing && groupMembers.length > 0 && (
+                    <>
+                      <Select
+                        onValueChange={(memberId) => {
+                          const member = groupMembers.find(m => m.id === memberId);
+                          if (member) {
+                            form.setValue("vice_president_2_id", memberId);
+                            form.setValue("vice_president_2_name", member.name);
+                          }
+                        }}
+                        value={form.watch("vice_president_2_id") || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar membro" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groupMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
+                    </>
                   )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="vice_president_2_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Nome do vice-presidente 2" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Secretário 1 */}
+                <div className="space-y-2">
+                  <FormLabel>Secretário 1</FormLabel>
+                  {isEditing && groupMembers.length > 0 && (
+                    <>
+                      <Select
+                        onValueChange={(memberId) => {
+                          const member = groupMembers.find(m => m.id === memberId);
+                          if (member) {
+                            form.setValue("secretary_1_id", memberId);
+                            form.setValue("secretary_1_name", member.name);
+                          }
+                        }}
+                        value={form.watch("secretary_1_id") || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar membro" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groupMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
+                    </>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="secretary_1_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Nome do secretário 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Secretário 2 */}
+                <div className="space-y-2">
+                  <FormLabel>Secretário 2 (Opcional)</FormLabel>
+                  {isEditing && groupMembers.length > 0 && (
+                    <>
+                      <Select
+                        onValueChange={(memberId) => {
+                          const member = groupMembers.find(m => m.id === memberId);
+                          if (member) {
+                            form.setValue("secretary_2_id", memberId);
+                            form.setValue("secretary_2_name", member.name);
+                          }
+                        }}
+                        value={form.watch("secretary_2_id") || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar membro" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groupMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
+                    </>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="secretary_2_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Nome do secretário 2" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 
