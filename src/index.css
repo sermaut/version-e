@@ -46,17 +46,28 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* SIGEG Design System */
+    /* SIGEG Design System - Advanced Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(213 80% 45%), hsl(213 90% 55%));
     --gradient-accent: linear-gradient(135deg, hsl(155 70% 45%), hsl(155 80% 55%));
     --gradient-subtle: linear-gradient(180deg, hsl(213 30% 98%), hsl(213 20% 94%));
+    --gradient-hero: linear-gradient(135deg, hsl(213 80% 45%), hsl(213 90% 65%), hsl(155 70% 50%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(213 30% 98%));
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+    --gradient-success: linear-gradient(135deg, hsl(155 70% 45%), hsl(155 80% 60%));
+    --gradient-warning: linear-gradient(135deg, hsl(45 90% 55%), hsl(45 95% 70%));
+    --gradient-destructive: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 90% 70%));
     
-    --shadow-soft: 0 2px 10px -2px hsl(213 20% 70% / 0.15);
-    --shadow-medium: 0 8px 25px -8px hsl(213 30% 50% / 0.25);
-    --shadow-strong: 0 15px 35px -10px hsl(213 40% 30% / 0.35);
+    /* Enhanced Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(213 30% 50% / 0.08);
+    --shadow-medium: 0 4px 16px -4px hsl(213 30% 50% / 0.12);
+    --shadow-strong: 0 8px 24px -6px hsl(213 30% 50% / 0.16);
+    --shadow-elevated: 0 10px 40px -10px hsl(213 30% 50% / 0.2);
+    --shadow-glow: 0 0 20px hsl(213 80% 45% / 0.3);
+    --shadow-glow-accent: 0 0 20px hsl(155 70% 45% / 0.3);
     
+    /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -131,6 +142,7 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Gradient Backgrounds */
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -143,6 +155,50 @@ All colors MUST be HSL.
     background: var(--gradient-subtle);
   }
   
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+  
+  .gradient-glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  
+  /* Modern Cards */
+  .card-modern {
+    @apply rounded-xl border-2 border-primary/10 shadow-soft
+           transition-all duration-500 hover:shadow-elevated hover:border-primary/30 
+           hover:-translate-y-1;
+    background: var(--gradient-card);
+  }
+  
+  .card-glass {
+    @apply backdrop-blur-xl border border-white/30 
+           transition-all duration-300 hover:shadow-medium;
+    background: var(--gradient-glass);
+  }
+  
+  .card-elevated {
+    @apply bg-card border border-border/50 shadow-soft transition-smooth;
+  }
+  
+  .card-elevated:hover {
+    @apply shadow-medium;
+  }
+  
+  /* Glass Effect */
+  .glass-effect {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  
+  /* Shadows */
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -155,6 +211,19 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-strong);
   }
   
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-glow-accent {
+    box-shadow: var(--shadow-glow-accent);
+  }
+  
+  /* Transitions */
   .transition-smooth {
     transition: var(--transition-smooth);
   }
@@ -162,16 +231,24 @@ All colors MUST be HSL.
   .transition-bounce {
     transition: var(--transition-bounce);
   }
-
-  .card-elevated {
-    @apply bg-card border border-border/50 shadow-soft transition-smooth;
+  
+  /* Interactive States */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-strong;
   }
   
-  .card-elevated:hover {
-    @apply shadow-medium;
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
   }
-
-  .glass-effect {
-    @apply bg-white/90 backdrop-blur-sm border border-white/20 shadow-soft;
+  
+  .hover-scale {
+    @apply transition-all duration-300 hover:scale-105;
+  }
+  
+  /* Input Modern */
+  .input-modern {
+    @apply border-2 border-input bg-background/50 rounded-lg
+           focus:border-primary focus:ring-4 focus:ring-primary/10 
+           transition-all duration-300 hover:border-primary/50;
   }
 }

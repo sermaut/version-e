@@ -34,14 +34,54 @@ interface CategoryLeader {
 }
 
 const categoryColors = [
-  { bg: "bg-blue-500/75", border: "border-blue-500", text: "text-blue-900" },
-  { bg: "bg-green-500/75", border: "border-green-500", text: "text-green-900" },
-  { bg: "bg-yellow-500/75", border: "border-yellow-500", text: "text-yellow-900" },
-  { bg: "bg-purple-500/75", border: "border-purple-500", text: "text-purple-900" },
-  { bg: "bg-red-500/75", border: "border-red-500", text: "text-red-900" },
-  { bg: "bg-orange-500/75", border: "border-orange-500", text: "text-orange-900" },
-  { bg: "bg-pink-500/75", border: "border-pink-500", text: "text-pink-900" },
-  { bg: "bg-cyan-500/75", border: "border-cyan-500", text: "text-cyan-900" },
+  {
+    gradient: "from-blue-500 to-blue-600",
+    icon: "bg-blue-500/10 text-blue-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]",
+    border: "border-blue-500/20"
+  },
+  {
+    gradient: "from-emerald-500 to-emerald-600",
+    icon: "bg-emerald-500/10 text-emerald-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]",
+    border: "border-emerald-500/20"
+  },
+  {
+    gradient: "from-amber-500 to-amber-600",
+    icon: "bg-amber-500/10 text-amber-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]",
+    border: "border-amber-500/20"
+  },
+  {
+    gradient: "from-purple-500 to-purple-600",
+    icon: "bg-purple-500/10 text-purple-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]",
+    border: "border-purple-500/20"
+  },
+  {
+    gradient: "from-rose-500 to-rose-600",
+    icon: "bg-rose-500/10 text-rose-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]",
+    border: "border-rose-500/20"
+  },
+  {
+    gradient: "from-orange-500 to-orange-600",
+    icon: "bg-orange-500/10 text-orange-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]",
+    border: "border-orange-500/20"
+  },
+  {
+    gradient: "from-pink-500 to-pink-600",
+    icon: "bg-pink-500/10 text-pink-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]",
+    border: "border-pink-500/20"
+  },
+  {
+    gradient: "from-cyan-500 to-cyan-600",
+    icon: "bg-cyan-500/10 text-cyan-600",
+    shadow: "hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]",
+    border: "border-cyan-500/20"
+  },
 ];
 
 export function FinancialCategoryCard({ 
@@ -123,30 +163,33 @@ export function FinancialCategoryCard({
   return (
     <>
       <Card 
-        className={`cursor-pointer transition-all hover:shadow-md border ${colorScheme.border} ${colorScheme.bg} backdrop-blur-sm relative`}
+        className={`group cursor-pointer transition-all duration-500 border-2 ${colorScheme.border} 
+                    hover:-translate-y-1 hover:shadow-elevated ${colorScheme.shadow} backdrop-blur-sm relative overflow-hidden`}
         onClick={handleCardClick}
       >
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <h3 className={`font-semibold text-sm ${colorScheme.text}`}>
-                {category.name}
-              </h3>
-              {isLocked && (
-                <Lock className="w-3 h-3 text-muted-foreground" />
-              )}
+        <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} opacity-5 
+                        group-hover:opacity-10 transition-opacity`} />
+        
+        <div className="relative p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorScheme.icon}
+                              transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+                {getBalanceIcon()}
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
+                  {category.name}
+                </h3>
+                {category.description && (
+                  <p className="text-xs text-muted-foreground mt-1">{category.description}</p>
+                )}
+              </div>
             </div>
-            <div className={`flex items-center space-x-1 ${getBalanceColor()}`}>
-              {getBalanceIcon()}
-            </div>
+            {isLocked && <Lock className="w-5 h-5 text-muted-foreground" />}
           </div>
           
-          <div className="space-y-2">
-            {category.description && (
-              <p className={`text-xs ${colorScheme.text} opacity-80`}>
-                {category.description}
-              </p>
-            )}
+          <div className="space-y-3">
 
             {/* Líderes */}
             {leaders.length > 0 && (

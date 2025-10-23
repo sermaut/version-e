@@ -62,34 +62,48 @@ export function MemberCard({
   };
 
   return (
-    <Card className="card-elevated transition-smooth hover:shadow-medium">
-      <div className="p-6">
-        {/* Header */}
+    <Card className="group card-modern overflow-hidden">
+      {/* Gradiente de fundo decorativo */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-accent/3 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <div className="relative p-6">
         <div className="flex items-start space-x-4 mb-4">
-          <Avatar className="w-12 h-12">
-            <AvatarImage 
-              src={member.profile_image_url} 
-              alt={member.name}
-            />
-            <AvatarFallback className="gradient-primary text-white">
-              {getInitials(member.name)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="w-16 h-16 border-4 border-primary/10 
+                              group-hover:border-primary/30 transition-all duration-500
+                              group-hover:scale-110">
+              <AvatarImage src={member.profile_image_url} alt={member.name} />
+              <AvatarFallback className="gradient-primary text-white text-lg font-bold">
+                {getInitials(member.name)}
+              </AvatarFallback>
+            </Avatar>
+            {/* Indicador de status */}
+            {member.is_active && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-success rounded-full 
+                              border-2 border-white animate-pulse shadow-glow-accent" />
+            )}
+          </div>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-semibold text-foreground line-clamp-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <h3 className="font-bold text-lg text-foreground line-clamp-1
+                             group-hover:text-primary transition-colors">
                 {member.name}
               </h3>
-              {member.role && getRoleIcon(member.role)}
+              {member.role && (
+                <div className="transition-transform duration-300 group-hover:scale-125">
+                  {getRoleIcon(member.role)}
+                </div>
+              )}
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant={member.is_active ? "default" : "secondary"}>
                 {member.is_active ? "Ativo" : "Inativo"}
               </Badge>
               {member.role && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="border-primary/30 text-primary">
                   {member.role}
                 </Badge>
               )}
@@ -97,75 +111,87 @@ export function MemberCard({
           </div>
         </div>
 
-        {/* Info */}
+        {/* Informações com ícones coloridos */}
         <div className="space-y-3 mb-6">
           {member.partition && (
-            <div className="flex items-center space-x-2 text-sm">
-              <Music className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Partição:</span>
-              <span className="font-medium text-foreground capitalize">
-                {member.partition}
-              </span>
+            <div className="flex items-center space-x-3 text-sm p-2 rounded-lg
+                            hover:bg-accent/10 transition-colors group/item">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center
+                              group-hover/item:scale-110 transition-transform">
+                <Music className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <span className="text-muted-foreground text-xs">Partição</span>
+                <p className="font-semibold text-foreground capitalize">{member.partition}</p>
+              </div>
             </div>
           )}
 
           {member.phone && (
-            <div className="flex items-center space-x-2 text-sm">
-              <Phone className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{member.phone}</span>
+            <div className="flex items-center space-x-3 text-sm p-2 rounded-lg
+                            hover:bg-primary/10 transition-colors group/item">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center
+                              group-hover/item:scale-110 transition-transform">
+                <Phone className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-foreground font-medium">{member.phone}</span>
             </div>
           )}
 
           {member.neighborhood && (
-            <div className="flex items-center space-x-2 text-sm">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center space-x-3 text-sm p-2 rounded-lg
+                            hover:bg-muted transition-colors group/item">
+              <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center
+                              group-hover/item:scale-110 transition-transform">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+              </div>
               <span className="text-foreground">{member.neighborhood}</span>
             </div>
           )}
 
           {member.member_code && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Código:</span>
-              <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+            <div className="flex items-center justify-between text-sm p-2 rounded-lg
+                            hover:bg-muted/50 transition-colors">
+              <span className="text-muted-foreground font-medium">Código:</span>
+              <code className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-xs font-mono
+                              hover:bg-primary/20 transition-colors">
                 {member.member_code}
               </code>
             </div>
           )}
         </div>
 
-        {/* Actions */}
+        {/* Botões com gradientes */}
         {showActions && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Button 
-              variant="outline" 
+              variant="gradient" 
               size="sm" 
               className="flex-1"
               onClick={() => onView?.(member.id)}
             >
               <Eye className="w-4 h-4" />
-              Ver Detalhes
+              Ver Perfil
             </Button>
             <Button 
-              variant="ghost" 
-              size="sm"
+              variant="outline" 
+              size="icon"
+              className="hover:border-primary hover:text-primary hover:bg-primary/5"
               onClick={() => onEdit?.(member.id)}
             >
               <Edit className="w-4 h-4" />
             </Button>
             <Button 
-              variant="ghost" 
-              size="sm"
-              className={member.is_active 
-                ? "text-destructive hover:text-destructive hover:bg-destructive/10" 
-                : "text-success hover:text-success hover:bg-success/10"
+              variant="outline" 
+              size="icon"
+              className={
+                member.is_active 
+                  ? "hover:border-destructive hover:text-destructive hover:bg-destructive/5" 
+                  : "hover:border-success hover:text-success hover:bg-success/5"
               }
               onClick={() => onToggleStatus?.(member.id)}
             >
-              {member.is_active ? (
-                <UserX className="w-4 h-4" />
-              ) : (
-                <UserCheck className="w-4 h-4" />
-              )}
+              {member.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
             </Button>
           </div>
         )}

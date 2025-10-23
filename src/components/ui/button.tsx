@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft hover:shadow-medium",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-soft",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-smooth",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-soft",
-        ghost: "hover:bg-accent hover:text-accent-foreground transition-smooth",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft hover:shadow-medium hover:scale-105",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-soft hover:shadow-medium hover:scale-105",
+        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-primary hover:scale-105",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-soft hover:scale-105",
+        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105",
         link: "text-primary underline-offset-4 hover:underline",
-        success: "bg-success text-success-foreground hover:bg-success/90 shadow-soft hover:shadow-medium",
-        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-soft",
-        gradient: "gradient-primary text-white hover:opacity-90 shadow-soft hover:shadow-medium",
-        "gradient-accent": "gradient-accent text-white hover:opacity-90 shadow-soft hover:shadow-medium",
-        "glass": "glass-effect text-foreground hover:bg-white/95",
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-soft hover:shadow-medium hover:scale-105",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-soft hover:scale-105",
+        gradient: "gradient-primary text-white hover:shadow-glow shadow-soft hover:scale-105",
+        "gradient-accent": "gradient-accent text-white hover:shadow-glow-accent shadow-soft hover:scale-105",
+        glass: "glass-effect text-foreground hover:border-white/50 backdrop-blur-xl",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -21,16 +21,29 @@ interface GroupCardProps {
 
 export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
   return (
-    <Card className="card-elevated transition-smooth hover:shadow-medium border-l-4 border-l-primary bg-background/60 backdrop-blur-sm">
-      <div className="p-6">
-        {/* Header */}
+    <Card className="group relative overflow-hidden card-modern border-l-4 border-l-primary">
+      {/* Efeito de luz de fundo */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      
+      <div className="relative p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center">
-              <Building className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center
+                              shadow-soft transition-all duration-500 
+                              group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-glow">
+                <Building className="w-7 h-7 text-white" />
+              </div>
+              {/* Badge de status animado */}
+              {group.is_active && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full 
+                                animate-pulse shadow-glow-accent" />
+              )}
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-foreground line-clamp-1">
+              <h3 className="font-bold text-xl text-foreground line-clamp-1 
+                             group-hover:text-primary transition-colors">
                 {group.name}
               </h3>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -39,27 +52,30 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
               </div>
             </div>
           </div>
-          <Badge variant={group.is_active ? "default" : "secondary"}>
+          <Badge variant={group.is_active ? "default" : "secondary"}
+                 className="transition-all duration-300 hover:scale-110">
             {group.is_active ? "Ativo" : "Inativo"}
           </Badge>
         </div>
 
-        {/* Info */}
+        {/* Info com hover effect */}
         <div className="space-y-3 mb-6">
           {group.access_code && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Código de Acesso:</span>
-              <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+            <div className="flex items-center justify-between text-sm p-3 rounded-lg
+                            bg-muted/30 hover:bg-muted/50 transition-colors">
+              <span className="text-muted-foreground font-medium">Código de Acesso:</span>
+              <code className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-xs font-mono
+                              hover:bg-primary/20 transition-colors">
                 {group.access_code}
               </code>
             </div>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center space-x-2">
+        {/* Botões modernos */}
+        <div className="flex items-center gap-2">
           <Button 
-            variant="outline" 
+            variant="gradient" 
             size="sm" 
             className="flex-1"
             onClick={() => onView?.(group.id)}
@@ -68,16 +84,17 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
             Ver Detalhes
           </Button>
           <Button 
-            variant="ghost" 
-            size="sm"
+            variant="outline" 
+            size="icon"
+            className="hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
             onClick={() => onEdit?.(group.id)}
           >
             <Edit className="w-4 h-4" />
           </Button>
           <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            variant="outline" 
+            size="icon" 
+            className="hover:border-destructive hover:text-destructive hover:bg-destructive/5 transition-all"
             onClick={() => onDelete?.(group.id)}
           >
             <Trash2 className="w-4 h-4" />
