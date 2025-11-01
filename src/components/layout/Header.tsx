@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff } from "lucide-react";
+import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { useTranslation } from 'react-i18next';
 
@@ -47,51 +47,87 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { name, code, icon: UserIcon } = getDisplayInfo();
 
   return (
-    <header className="h-16 border-b border-border/50 bg-gradient-to-r from-card via-card to-card/95 
-                       backdrop-blur-xl shadow-soft sticky top-0 z-50">
+    <header className="relative h-16 border-b border-primary/10 
+                       bg-gradient-to-r from-primary/8 via-primary/5 to-accent/8 
+                       backdrop-blur-xl shadow-medium sticky top-0 z-50
+                       supports-[backdrop-filter]:bg-background/95">
+      
+      {/* Linha decorativa superior */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r 
+                      from-transparent via-primary to-transparent opacity-50" />
+      
       <div className="flex items-center justify-between h-full px-3 md:px-6">
         {/* Mobile menu button */}
         <Button 
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
-          className="lg:hidden"
+          className="lg:hidden hover:bg-primary/10"
         >
           <Menu className="w-5 h-5" />
         </Button>
 
-        {/* Search com efeito de foco */}
+        {/* Logo SIGEG (Desktop only) */}
+        <div className="hidden lg:flex items-center gap-3 mr-6">
+          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center
+                          shadow-soft hover:scale-110 transition-transform duration-300 cursor-pointer">
+            <Music className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-foreground leading-tight">SIGEG-BV</span>
+            <span className="text-xs text-muted-foreground leading-tight">Sistema de Gestão</span>
+          </div>
+        </div>
+
+        {/* Search com efeito aprimorado */}
         <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md">
           <div className="relative flex-1 group">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 
-                              text-muted-foreground w-4 h-4 
-                              group-focus-within:text-primary transition-colors" />
+                              text-muted-foreground/70 w-4 h-4 
+                              group-focus-within:text-primary transition-colors z-10" />
             <Input
               placeholder="Buscar grupos, membros..."
-              className="pl-10 bg-background/50 border-2 border-border/50 
-                         focus:border-primary focus:ring-4 focus:ring-primary/10 
-                         transition-all duration-300 hover:border-primary/50"
+              className="pl-10 h-10 
+                         bg-white/60 backdrop-blur-sm
+                         border-2 border-primary/20
+                         focus:border-primary focus:bg-white
+                         focus:ring-4 focus:ring-primary/10 
+                         transition-all duration-300 
+                         hover:border-primary/40 hover:bg-white/80
+                         placeholder:text-muted-foreground/70"
             />
           </div>
         </div>
 
-        {/* User info com avatar animado */}
+        {/* User info section */}
         <div className="flex items-center space-x-2 md:space-x-3">
           <LanguageSelector />
           
-          {/* Notificação com pulso */}
-          <Button variant="ghost" size="icon" className="relative hidden md:flex group">
+          {/* Notificação melhorada */}
+          <Button variant="ghost" size="icon" 
+                  className="relative hidden md:flex group hover:bg-primary/10">
             <Bell className="w-5 h-5 group-hover:text-primary transition-colors" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-accent to-accent/70 
-                             rounded-full flex items-center justify-center shadow-glow-accent animate-pulse">
-              <span className="text-white text-xs font-bold">3</span>
+            <span className="absolute -top-1 -right-1 
+                           w-5 h-5 rounded-full flex items-center justify-center
+                           bg-gradient-to-br from-red-500 to-red-600
+                           text-white text-xs font-bold
+                           shadow-[0_0_10px_rgba(239,68,68,0.5)]
+                           animate-pulse ring-2 ring-white">
+              3
             </span>
           </Button>
           
-          <div className="flex items-center space-x-2 md:space-x-3 pl-2 md:pl-3 border-l border-border">
-            <div className="text-right">
-              <p className="text-xs md:text-sm font-semibold text-foreground">{name}</p>
-              <div className="flex items-center space-x-1">
+          {/* Separador elegante */}
+          <div className="h-8 w-px bg-gradient-to-b from-transparent via-border to-transparent 
+                          hidden md:block" />
+          
+          <div className="flex items-center space-x-2 md:space-x-3">
+            {/* User info */}
+            <div className="text-right hidden sm:block">
+              <p className="text-xs md:text-sm font-semibold text-foreground leading-tight">
+                {name}
+              </p>
+              <div className="flex items-center justify-end space-x-1">
                 <p className="text-xs text-muted-foreground">Código:</p>
                 {showCode ? (
                   <span className="text-xs text-primary font-mono font-semibold">{code}</span>
@@ -109,19 +145,19 @@ export function Header({ onMenuClick }: HeaderProps) {
               </div>
             </div>
             
-            {/* Avatar com gradiente e animação */}
+            {/* Avatar com gradiente */}
             <div className="relative group">
               <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
                               group-hover:opacity-75 transition-opacity duration-500" />
               <Button variant="outline" size="icon" 
                       className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
                                  border-primary/20 hover:border-primary hover:scale-110 
-                                 transition-all duration-300 gradient-primary">
+                                 transition-all duration-300 gradient-primary shadow-soft">
                 <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
               </Button>
             </div>
             
-            {/* Botão de logout com hover effect */}
+            {/* Botão logout */}
             <Button 
               variant="ghost" 
               size="icon"
