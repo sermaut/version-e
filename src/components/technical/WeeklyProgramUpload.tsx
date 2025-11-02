@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Upload, X, Image as ImageIcon, Music, Loader2, FileText } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Music, Loader2, FileText, Camera, Mic, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface WeeklyProgramUploadProps {
   groupId: string;
@@ -17,9 +18,13 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
 
@@ -51,7 +56,6 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 12MB)
     if (file.size > 12 * 1024 * 1024) {
       toast({
         title: "Erro",
@@ -62,6 +66,70 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     }
 
     setAudioFile(file);
+  };
+
+  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const file = new File([blob], `recording_${Date.now()}.webm`, { type: 'audio/webm' });
+        setAudioFile(file);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      
+      toast({
+        title: "Gravação iniciada",
+        description: "Clique novamente para parar",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível acessar o microfone",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setMediaRecorder(null);
+      toast({
+        title: "Gravação finalizada",
+        description: "Áudio salvo com sucesso",
+      });
+    }
   };
 
   const handleUpload = async () => {
@@ -137,13 +205,14 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         description: "Programa semanal adicionado com sucesso! Será removido automaticamente após 6 dias.",
       });
 
-      // Reset form
       setTitle("");
       setImageFile(null);
       setAudioFile(null);
       setImagePreview(null);
       if (imageInputRef.current) imageInputRef.current.value = "";
       if (audioInputRef.current) audioInputRef.current.value = "";
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
+      setIsOpen(false);
 
       onUploadComplete();
     } catch (error) {
@@ -159,17 +228,25 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   };
 
   return (
-    <Card className="p-6 space-y-4 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/10 shadow-lg">
-      {/* Header */}
-      <div className="flex items-center gap-3 pb-4 border-b border-primary/20">
-        <div className="p-3 bg-primary/10 rounded-lg">
-          <Upload className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">Adicionar Programa Semanal</h3>
-          <p className="text-sm text-muted-foreground">Faça upload de imagem e áudio</p>
-        </div>
-      </div>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="border-2 border-primary/10 shadow-lg overflow-hidden">
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-primary/5 transition-colors bg-gradient-to-r from-primary/5 to-accent/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Upload className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Adicionar Programa Semanal</h3>
+                <p className="text-xs text-muted-foreground">Clique para expandir</p>
+              </div>
+            </div>
+            {isOpen ? <ChevronUp className="w-5 h-5 text-primary" /> : <ChevronDown className="w-5 h-5 text-primary" />}
+          </div>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="p-6 space-y-4 bg-gradient-to-br from-background via-primary/3 to-accent/3">
 
       {/* Título */}
       <div className="space-y-2">
@@ -197,21 +274,41 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
           </label>
         </div>
         <div className="space-y-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => imageInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full border-primary/20 hover:border-primary hover:bg-primary/5"
-          >
-            <ImageIcon className="w-4 h-4 mr-2" />
-            {imageFile ? imageFile.name : "Selecionar Imagem"}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploading}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5"
+            >
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Galeria
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Câmera
+            </Button>
+          </div>
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             onChange={handleImageChange}
+            className="hidden"
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleCameraCapture}
             className="hidden"
           />
           {imagePreview && (
@@ -249,20 +346,32 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
           </label>
         </div>
         <div className="space-y-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => audioInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full border-primary/20 hover:border-primary hover:bg-primary/5"
-          >
-            <Music className="w-4 h-4 mr-2" />
-            {audioFile ? audioFile.name : "Selecionar Áudio"}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => audioInputRef.current?.click()}
+              disabled={uploading}
+              className="border-primary/20 hover:border-primary hover:bg-primary/5"
+            >
+              <Music className="w-4 h-4 mr-2" />
+              Arquivo
+            </Button>
+            <Button
+              type="button"
+              variant={isRecording ? "destructive" : "outline"}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={uploading}
+              className={!isRecording ? "border-primary/20 hover:border-primary hover:bg-primary/5" : ""}
+            >
+              <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-pulse' : ''}`} />
+              {isRecording ? "Parar" : "Gravar"}
+            </Button>
+          </div>
           <input
             ref={audioInputRef}
             type="file"
-            accept="audio/mpeg,audio/wav,audio/mp3"
+            accept="audio/*"
             onChange={handleAudioChange}
             className="hidden"
           />
@@ -308,6 +417,9 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       <p className="text-xs text-muted-foreground text-center pt-2 border-t border-primary/10">
         O conteúdo será automaticamente removido após 6 dias
       </p>
-    </Card>
+          </div>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }

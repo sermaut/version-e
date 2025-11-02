@@ -71,14 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const storedUser = sessionStorage.getItem('sigeg_user');
+    const storedUser = localStorage.getItem('sigeg_user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error('Error parsing stored user:', error);
-        sessionStorage.removeItem('sigeg_user');
+        localStorage.removeItem('sigeg_user');
       }
     }
     setLoading(false);
@@ -119,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         setUser(authUser);
-        sessionStorage.setItem('sigeg_user', JSON.stringify(authUser));
+        localStorage.setItem('sigeg_user', JSON.stringify(authUser));
         return { success: true };
 
       } else {
@@ -170,7 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         setUser(authUser);
-        sessionStorage.setItem('sigeg_user', JSON.stringify(authUser));
+        localStorage.setItem('sigeg_user', JSON.stringify(authUser));
         return { success: true };
       }
     } catch (error) {
@@ -183,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    sessionStorage.removeItem('sigeg_user');
+    localStorage.removeItem('sigeg_user');
   };
 
   const hasPermission = (permission: string) => {

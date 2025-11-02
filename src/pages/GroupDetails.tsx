@@ -338,10 +338,10 @@ export default function GroupDetails() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info" className="space-y-6">
-            <Card className="card-elevated">
+          <TabsContent value="info" className="flex items-center justify-center min-h-[400px]">
+            <Card className="card-elevated max-w-4xl w-full">
               <div className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
                   Informações Detalhadas
                 </h3>
                  <div className="space-y-6">
@@ -430,11 +430,10 @@ export default function GroupDetails() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="members" className="space-y-6">
-            {/* Search and Filters */}
-            <Card className="card-elevated">
+          <TabsContent value="members" className="flex flex-col items-center justify-start min-h-[400px] space-y-6">
+            <Card className="card-elevated w-full max-w-6xl">
               <div className="p-6">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center justify-center space-x-4">
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
@@ -452,8 +451,7 @@ export default function GroupDetails() {
               </div>
             </Card>
 
-            {/* Members Table - Optimized */}
-            <Card className="card-elevated p-0">
+            <Card className="card-elevated p-0 w-full max-w-6xl">
               <OptimizedMembersTable 
                 members={filteredMembers}
                 onMemberView={handleMemberView}
@@ -462,67 +460,70 @@ export default function GroupDetails() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="financial" className="space-y-6">
-            <FinancialDashboard 
-              groupId={id!} 
-              currentMemberId={currentMemberId}
-              isGroupLeader={isGroupLeader}
-            />
+          <TabsContent value="financial" className="flex items-center justify-center min-h-[400px]">
+            <div className="w-full max-w-6xl">
+              <FinancialDashboard 
+                groupId={id!} 
+                currentMemberId={currentMemberId}
+                isGroupLeader={isGroupLeader}
+              />
+            </div>
           </TabsContent>
 
-          <TabsContent value="technical" className="space-y-6">
-            <Tabs defaultValue="program" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
-                                   rounded-xl border-2 border-primary/10 shadow-soft">
-                <TabsTrigger value="program"
-                             className="rounded-lg data-[state=active]:gradient-primary 
-                                       data-[state=active]:text-white data-[state=active]:shadow-soft
-                                       transition-all duration-300">
-                  Programa Semanal
-                </TabsTrigger>
-                <TabsTrigger value="rehearsals"
-                             className="rounded-lg data-[state=active]:gradient-primary 
-                                       data-[state=active]:text-white data-[state=active]:shadow-soft
-                                       transition-all duration-300">
-                  Participação nos Ensaios
-                </TabsTrigger>
-              </TabsList>
+          <TabsContent value="technical" className="flex flex-col items-center justify-start min-h-[400px] space-y-6">
+            <div className="w-full max-w-4xl">
+              <Tabs defaultValue="program" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
+                                     rounded-xl border-2 border-primary/10 shadow-soft">
+                  <TabsTrigger value="program"
+                               className="rounded-lg data-[state=active]:gradient-primary 
+                                         data-[state=active]:text-white data-[state=active]:shadow-soft
+                                         transition-all duration-300">
+                    Programa Semanal
+                  </TabsTrigger>
+                  <TabsTrigger value="rehearsals"
+                               className="rounded-lg data-[state=active]:gradient-primary 
+                                         data-[state=active]:text-white data-[state=active]:shadow-soft
+                                         transition-all duration-300">
+                    Participação nos Ensaios
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="program" className="space-y-4">
+                  <WeeklyProgramUpload 
+                    groupId={id!}
+                    onUploadComplete={() => setRefreshPrograms(prev => prev + 1)}
+                  />
+                  <WeeklyProgramList 
+                    groupId={id!}
+                    refreshTrigger={refreshPrograms}
+                  />
+                </TabsContent>
               
-              <TabsContent value="program" className="space-y-4">
-                <WeeklyProgramUpload 
-                  groupId={id!}
-                  onUploadComplete={() => setRefreshPrograms(prev => prev + 1)}
-                />
-                <WeeklyProgramList 
-                  groupId={id!}
-                  refreshTrigger={refreshPrograms}
-                />
-              </TabsContent>
-              
-              <TabsContent value="rehearsals" className="space-y-4">
-                <Card className="card-elevated">
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Participação nos Ensaios
-                    </h3>
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground text-sm">
-                        Selecione os membros que participaram nos ensaios por partição
-                      </p>
-                      <div className="grid gap-4">
-                        {/* Placeholder for rehearsal participation */}
-                        <div className="p-4 border border-border rounded-lg">
-                          <h4 className="font-medium mb-2">Soprano</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Funcionalidade em desenvolvimento
-                          </p>
+                <TabsContent value="rehearsals" className="space-y-4">
+                  <Card className="card-elevated">
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Participação nos Ensaios
+                      </h3>
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground text-sm">
+                          Selecione os membros que participaram nos ensaios por partição
+                        </p>
+                        <div className="grid gap-4">
+                          <div className="p-4 border border-border rounded-lg">
+                            <h4 className="font-medium mb-2">Soprano</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Funcionalidade em desenvolvimento
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

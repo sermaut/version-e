@@ -21,17 +21,8 @@ export default function Auth() {
   
   const from = location.state?.from?.pathname || '/';
 
-  // Clear any corrupted session data on mount
   useEffect(() => {
-    try {
-      const storedUser = sessionStorage.getItem('sigeg_user');
-      if (storedUser) {
-        JSON.parse(storedUser); // Validate it's valid JSON
-      }
-    } catch (error) {
-      console.error('Corrupted session data detected, clearing...', error);
-      sessionStorage.removeItem('sigeg_user');
-    }
+    // Sessão persistente - não limpar ao montar
   }, []);
 
   // Redirect if already authenticated
