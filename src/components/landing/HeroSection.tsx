@@ -58,8 +58,8 @@ export function HeroSection() {
             {/* Content */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                  Gerencie seus
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                  <span className="block sm:inline">Gerencie seus</span>
                   <span className="gradient-primary bg-clip-text text-transparent"> Grupos Musicais</span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
@@ -81,13 +81,13 @@ export function HeroSection() {
               </div>
 
               {/* CTA */}
-              <div className="flex items-center space-x-4">
-                <Button variant="gradient" size="xl" className="shadow-strong">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                <Button variant="gradient" size="lg" className="shadow-strong whitespace-nowrap">
                   Começar Agora
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
-                <Button variant="outline" size="xl">
-                  Ver Demonstração
+                <Button variant="outline" size="lg" className="whitespace-nowrap">
+                  Ver Grupos
                 </Button>
               </div>
             </div>

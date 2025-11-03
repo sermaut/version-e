@@ -21,6 +21,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   const [isOpen, setIsOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
   
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -32,11 +33,11 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
+    // Check file size (max 4MB)
+    if (file.size > 4 * 1024 * 1024) {
       toast({
         title: "Erro",
-        description: "A imagem deve ter no máximo 2MB",
+        description: "A imagem deve ter no máximo 4MB",
         variant: "destructive",
       });
       return;
@@ -72,10 +73,10 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > 4 * 1024 * 1024) {
       toast({
         title: "Erro",
-        description: "A imagem deve ter no máximo 2MB",
+        description: "A imagem deve ter no máximo 4MB",
         variant: "destructive",
       });
       return;
@@ -100,6 +101,11 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         const blob = new Blob(chunks, { type: 'audio/webm' });
         const file = new File([blob], `recording_${Date.now()}.webm`, { type: 'audio/webm' });
         setAudioFile(file);
+        
+        // Create audio preview URL
+        const audioUrl = URL.createObjectURL(blob);
+        setAudioPreview(audioUrl);
+        
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -209,6 +215,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       setImageFile(null);
       setAudioFile(null);
       setImagePreview(null);
+      setAudioPreview(null);
       if (imageInputRef.current) imageInputRef.current.value = "";
       if (audioInputRef.current) audioInputRef.current.value = "";
       if (cameraInputRef.current) cameraInputRef.current.value = "";
@@ -270,7 +277,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         <div className="flex items-center gap-2">
           <ImageIcon className="w-4 h-4 text-primary" />
           <label className="text-sm font-semibold text-foreground">
-            Imagem (máx. 2MB)
+            Imagem (máx. 4MB)
           </label>
         </div>
         <div className="space-y-2">
@@ -365,7 +372,18 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
               className={!isRecording ? "border-primary/20 hover:border-primary hover:bg-primary/5" : ""}
             >
               <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-pulse' : ''}`} />
-              {isRecording ? "Parar" : "Gravar"}
+              {isRecording ? (
+                <>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1 h-3 bg-white animate-wave-1 rounded-full"></span>
+                    <span className="w-1 h-4 bg-white animate-wave-2 rounded-full"></span>
+                    <span className="w-1 h-3 bg-white animate-wave-3 rounded-full"></span>
+                    <span className="w-1 h-4 bg-white animate-wave-1 rounded-full"></span>
+                    <span className="w-1 h-3 bg-white animate-wave-2 rounded-full"></span>
+                  </span>
+                  Parar
+                </>
+              ) : "Gravar"}
             </Button>
           </div>
           <input
@@ -376,20 +394,28 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
             className="hidden"
           />
           {audioFile && (
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-              <span className="text-sm truncate font-medium">{audioFile.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="hover:bg-destructive/10"
-                onClick={() => {
-                  setAudioFile(null);
-                  if (audioInputRef.current) audioInputRef.current.value = "";
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
+                <span className="text-sm truncate font-medium">{audioFile.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-destructive/10"
+                  onClick={() => {
+                    setAudioFile(null);
+                    setAudioPreview(null);
+                    if (audioInputRef.current) audioInputRef.current.value = "";
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              {audioPreview && (
+                <audio controls className="w-full" src={audioPreview}>
+                  Seu navegador não suporta o elemento de áudio.
+                </audio>
+              )}
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,8 @@ import {
   FileText,
   Activity,
   Filter,
-  CreditCard
+  CreditCard,
+  Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MembersTable } from "@/components/members/MembersTable";
@@ -29,6 +30,7 @@ import { OptimizedMembersTable } from "@/components/members/OptimizedMembersTabl
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { WeeklyProgramUpload } from "@/components/technical/WeeklyProgramUpload";
 import { WeeklyProgramList } from "@/components/technical/WeeklyProgramList";
+import { RehearsalAttendance } from "@/components/technical/RehearsalAttendance";
 
 interface Group {
   id: string;
@@ -338,192 +340,183 @@ export default function GroupDetails() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info" className="flex items-center justify-center min-h-[400px]">
-            <Card className="card-elevated max-w-4xl w-full">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
-                  Informações Detalhadas
-                </h3>
-                 <div className="space-y-6">
-                  {/* Liderança do Grupo */}
-                  <div>
-                    <h4 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
-                      <Crown className="w-4 h-4" />
-                      Liderança do Grupo
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {group.president_name && (
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Presidente</label>
-                          <p className="text-foreground">{group.president_name}</p>
-                        </div>
-                      )}
-                      {group.vice_president_1_name && (
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Vice-presidente 1</label>
-                          <p className="text-foreground">{group.vice_president_1_name}</p>
-                        </div>
-                      )}
-                      {group.vice_president_2_name && (
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Vice-presidente 2</label>
-                          <p className="text-foreground">{group.vice_president_2_name}</p>
-                        </div>
-                      )}
-                      {group.secretary_1_name && (
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Secretário 1</label>
-                          <p className="text-foreground">{group.secretary_1_name}</p>
-                        </div>
-                      )}
-                      {group.secretary_2_name && (
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Secretário 2</label>
-                          <p className="text-foreground">{group.secretary_2_name}</p>
-                        </div>
-                      )}
+          <TabsContent value="info">
+            <Card className="border-2 border-primary/10 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+                <CardTitle className="text-foreground">Detalhes do Grupo</CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                {/* Liderança Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b-2 border-primary/10">
+                    <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
+                      <Users className="w-5 h-5 text-primary" />
                     </div>
+                    <h3 className="text-xl font-semibold text-foreground">Liderança</h3>
+                    <Badge variant="outline" className="ml-auto border-primary/20 text-primary">
+                      {leadersCount}/5 Posições Preenchidas
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.president_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Presidente</label>
+                        <p className="text-foreground">{group.president_name}</p>
+                      </div>
+                    )}
+                    {group.vice_president_1_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 1</label>
+                        <p className="text-foreground">{group.vice_president_1_name}</p>
+                      </div>
+                    )}
+                    {group.vice_president_2_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 2</label>
+                        <p className="text-foreground">{group.vice_president_2_name}</p>
+                      </div>
+                    )}
+                    {group.secretary_1_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Secretário 1</label>
+                        <p className="text-foreground">{group.secretary_1_name}</p>
+                      </div>
+                    )}
+                    {group.secretary_2_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Secretário 2</label>
+                        <p className="text-foreground">{group.secretary_2_name}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Informações Gerais Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b-2 border-primary/10">
+                    <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
+                      <Info className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">Informações Gerais</h3>
                   </div>
 
-                  {/* Informações Gerais */}
-                  <div>
-                    <h4 className="text-md font-semibold text-foreground mb-3">Informações Gerais</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Direção</label>
-                        <p className="text-foreground capitalize">{group.direction}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Direção</label>
+                      <p className="text-foreground capitalize">{group.direction}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Província</label>
+                      <p className="text-foreground">{group.province}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Município</label>
+                      <p className="text-foreground">{group.municipality}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
+                      <p className="text-foreground">{members.length} / {group.max_members}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
+                      <p className="text-foreground">{group.monthly_fee} Kz</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
+                      <p className="text-foreground">
+                        {new Date(group.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
+                      <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                        {group.access_code || 'Não definido'}
+                      </code>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
+                      <div className="flex items-center space-x-2">
                         <p className="text-foreground">
-                          {new Date(group.created_at).toLocaleDateString('pt-BR')}
+                          {group.monthly_plans?.name || 'Nenhum plano definido'}
                         </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
-                        <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {group.access_code || 'Não definido'}
-                        </code>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
-                        <div className="flex items-center space-x-2">
-                          <p className="text-foreground">
-                            {group.monthly_plans?.name || 'Nenhum plano definido'}
-                          </p>
-                          {group.monthly_plans && (
-                            <Badge variant={group.monthly_plans.is_active ? "default" : "secondary"}>
-                              {group.monthly_plans.is_active ? "Ativo" : "Inativo"}
-                            </Badge>
-                          )}
-                        </div>
                         {group.monthly_plans && (
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            Máx. {group.monthly_plans.max_members} membros • {group.monthly_plans.price_per_member} Kz por membro
-                          </div>
+                          <Badge variant={group.monthly_plans.is_active ? "default" : "secondary"}>
+                            {group.monthly_plans.is_active ? "Ativo" : "Inativo"}
+                          </Badge>
                         )}
                       </div>
+                      {group.monthly_plans && (
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          Máx. {group.monthly_plans.max_members} membros • {group.monthly_plans.price_per_member} Kz por membro
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="members" className="flex flex-col items-center justify-start min-h-[400px] space-y-6">
-            <Card className="card-elevated w-full max-w-6xl">
-              <div className="p-6">
-                <div className="flex items-center justify-center space-x-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <TabsContent value="members">
+            <Card className="border-2 border-primary/10 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <CardTitle className="text-foreground">Membros do Grupo</CardTitle>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar membros..."
+                      placeholder="Buscar membro..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 border-primary/20 focus:border-primary"
                     />
                   </div>
-                  <Button variant="outline">
-                    <Filter className="w-4 h-4" />
-                    Filtros
-                  </Button>
                 </div>
-              </div>
-            </Card>
-
-            <Card className="card-elevated p-0 w-full max-w-6xl">
-              <OptimizedMembersTable 
-                members={filteredMembers}
-                onMemberView={handleMemberView}
-                onMemberEdit={handleMemberEdit}
-              />
+              </CardHeader>
+              <CardContent className="p-6">
+                <OptimizedMembersTable
+                  members={filteredMembers}
+                  onMemberView={handleMemberView}
+                  onMemberEdit={handleMemberEdit}
+                />
+              </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="financial" className="flex items-center justify-center min-h-[400px]">
-            <div className="w-full max-w-6xl">
-              <FinancialDashboard 
-                groupId={id!} 
-                currentMemberId={currentMemberId}
-                isGroupLeader={isGroupLeader}
-              />
-            </div>
+          <TabsContent value="financial">
+            <FinancialDashboard 
+              groupId={id!} 
+              currentMemberId={currentMemberId}
+              isGroupLeader={isGroupLeader}
+            />
           </TabsContent>
 
-          <TabsContent value="technical" className="flex flex-col items-center justify-start min-h-[400px] space-y-6">
-            <div className="w-full max-w-4xl">
-              <Tabs defaultValue="program" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
-                                     rounded-xl border-2 border-primary/10 shadow-soft">
-                  <TabsTrigger value="program"
-                               className="rounded-lg data-[state=active]:gradient-primary 
-                                         data-[state=active]:text-white data-[state=active]:shadow-soft
-                                         transition-all duration-300">
-                    Programa Semanal
-                  </TabsTrigger>
-                  <TabsTrigger value="rehearsals"
-                               className="rounded-lg data-[state=active]:gradient-primary 
-                                         data-[state=active]:text-white data-[state=active]:shadow-soft
-                                         transition-all duration-300">
-                    Participação nos Ensaios
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="program" className="space-y-4">
-                  <WeeklyProgramUpload 
-                    groupId={id!}
-                    onUploadComplete={() => setRefreshPrograms(prev => prev + 1)}
-                  />
-                  <WeeklyProgramList 
-                    groupId={id!}
-                    refreshTrigger={refreshPrograms}
-                  />
-                </TabsContent>
-              
-                <TabsContent value="rehearsals" className="space-y-4">
-                  <Card className="card-elevated">
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">
-                        Participação nos Ensaios
-                      </h3>
-                      <div className="space-y-4">
-                        <p className="text-muted-foreground text-sm">
-                          Selecione os membros que participaram nos ensaios por partição
-                        </p>
-                        <div className="grid gap-4">
-                          <div className="p-4 border border-border rounded-lg">
-                            <h4 className="font-medium mb-2">Soprano</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Funcionalidade em desenvolvimento
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
+          <TabsContent value="technical">
+            <Tabs defaultValue="programa" className="w-full">
+              <TabsList className="w-full bg-gradient-to-r from-muted/50 to-accent/10 border-2 border-primary/10 shadow-soft p-1">
+                <TabsTrigger value="programa" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft">
+                  Programa Semanal
+                </TabsTrigger>
+                <TabsTrigger value="ensaios" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft">
+                  Participação nos Ensaios
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="programa" className="space-y-6 mt-6">
+                <WeeklyProgramUpload
+                  groupId={id!}
+                  onUploadComplete={() => {
+                    window.location.reload();
+                  }}
+                />
+                <WeeklyProgramList groupId={id!} refreshTrigger={0} />
+              </TabsContent>
+
+              <TabsContent value="ensaios" className="space-y-6 mt-6">
+                <RehearsalAttendance groupId={id!} members={members} />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
