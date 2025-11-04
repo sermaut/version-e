@@ -89,21 +89,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
 
       if (type === 'admin') {
+        // Normalizar o código
+        const normalizedCode = code.trim().toUpperCase();
+        
+        console.log('Tentando login de admin com código:', normalizedCode);
+        
         const { data, error } = await supabase
           .from('system_admins')
           .select('*')
-          .eq('access_code', code)
+          .eq('access_code', normalizedCode)
           .eq('is_active', true)
           .maybeSingle();
 
         if (error) {
           console.error('Admin login error:', error);
-          return { success: false, error: 'Erro ao verificar código de administrador' };
+          console.error('Error details:', JSON.stringify(error));
+          
+          // Verificar se é erro de conexão
+          if (error.message.includes('fetch') || error.message.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          }
+          
+          return { success: false, error: 'Erro ao verificar código de administrador. Por favor, tente novamente.' };
         }
 
         if (!data) {
+          console.log('Nenhum admin encontrado com o código:', normalizedCode);
           return { success: false, error: 'Código de administrador inválido ou inativo' };
         }
+        
+        console.log('Admin encontrado:', data.name);
 
         // Validate required fields
         if (!data.id || !data.name || !data.email || !data.permission_level) {
@@ -123,22 +138,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true };
 
       } else {
+        // Normalizar o código de membro
+        const normalizedCode = code.trim().toUpperCase();
+        
+        console.log('Tentando login de membro com código:', normalizedCode);
+        
         // First, get the member data
         const { data: memberData, error: memberError } = await supabase
           .from('members')
           .select('*')
-          .eq('member_code', code)
+          .eq('member_code', normalizedCode)
           .eq('is_active', true)
           .maybeSingle();
 
         if (memberError) {
           console.error('Member login error:', memberError);
-          return { success: false, error: 'Erro ao verificar código de membro' };
+          console.error('Error details:', JSON.stringify(memberError));
+          
+          // Verificar se é erro de conexão
+          if (memberError.message.includes('fetch') || memberError.message.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          }
+          
+          return { success: false, error: 'Erro ao verificar código de membro. Por favor, tente novamente.' };
         }
 
         if (!memberData) {
+          console.log('Nenhum membro encontrado com o código:', normalizedCode);
           return { success: false, error: 'Código de membro inválido ou inativo' };
         }
+        
+        console.log('Membro encontrado:', memberData.name);
 
         // Validate required member fields
         if (!memberData.id || !memberData.name || !memberData.group_id || !memberData.role) {

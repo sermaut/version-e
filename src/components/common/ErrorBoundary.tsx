@@ -31,11 +31,11 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
         <Alert variant="destructive" className="border-destructive/50">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="text-lg font-semibold">
-            Erro na Aplicação
+            Ocorreu um erro
           </AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p className="text-sm text-muted-foreground">
-              Ocorreu um erro ao carregar a aplicação. Isso pode ser devido a dados em cache corrompidos.
+              Verifique a sua ligação e recarrega a página.
             </p>
             {process.env.NODE_ENV === 'development' && (
               <details className="mt-2">
@@ -51,21 +51,13 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
           </AlertDescription>
         </Alert>
         
-        <div className="flex space-x-2">
+        <div className="flex">
           <Button
             onClick={clearCacheAndRetry}
             variant="default"
-            className="flex-1"
+            className="w-full"
           >
             Limpar cache e voltar ao login
-          </Button>
-          <Button
-            onClick={resetErrorBoundary}
-            variant="outline"
-            className="flex-1"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Tentar novamente
           </Button>
         </div>
       </div>

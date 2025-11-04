@@ -36,10 +36,13 @@ export default function Auth() {
       return;
     }
 
+    // Normalizar código
+    const normalizedCode = code.trim().toUpperCase();
+    
     setLoading(true);
     setError('');
 
-    const result = await login(code, type);
+    const result = await login(normalizedCode, type);
     
     if (result.success) {
       toast({
@@ -48,6 +51,15 @@ export default function Auth() {
       });
     } else {
       setError(result.error || 'Erro ao fazer login');
+      
+      // Sugerir limpar cache se for erro de verificação
+      if (result.error?.includes('verificar código')) {
+        toast({
+          title: "Erro ao fazer login",
+          description: "Se o problema persistir, tente limpar o cache do navegador.",
+          variant: "destructive",
+        });
+      }
     }
     
     setLoading(false);

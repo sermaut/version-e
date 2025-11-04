@@ -218,21 +218,32 @@ export function CategoryLeadersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Gerir Líderes - {categoryName}</DialogTitle>
+      <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10">
+              <Crown className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-xl sm:text-2xl">Gerir Líderes</DialogTitle>
+              <p className="text-sm text-muted-foreground font-normal">{categoryName}</p>
+            </div>
+          </div>
           <DialogDescription>
             Atribua presidente, secretário e auxiliares para esta categoria financeira.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 mt-4">
           {/* Adicionar novo líder */}
-          <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-            <h4 className="font-medium text-sm">Adicionar Líder</h4>
-            <div className="flex gap-2">
+          <div className="space-y-3 p-4 sm:p-5 rounded-xl bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 border border-primary/10 shadow-sm transition-all duration-300 hover:shadow-md">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Adicionar Líder
+            </h4>
+            <div className="flex flex-col sm:flex-row gap-3">
               <Select value={selectedMember} onValueChange={setSelectedMember}>
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="w-full sm:flex-1 h-11 bg-background/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
                   <SelectValue placeholder="Selecionar membro..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -247,7 +258,7 @@ export function CategoryLeadersDialog({
               </Select>
 
               <Select value={selectedRole} onValueChange={(val) => setSelectedRole(val as any)}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40 h-11 bg-background/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -257,36 +268,58 @@ export function CategoryLeadersDialog({
                 </SelectContent>
               </Select>
 
-              <Button onClick={handleAddLeader} disabled={!selectedMember || loading}>
-                Adicionar
+              <Button 
+                onClick={handleAddLeader} 
+                disabled={!selectedMember || loading}
+                className="w-full sm:w-auto h-11 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Adicionando...</span>
+                  </div>
+                ) : (
+                  'Adicionar'
+                )}
               </Button>
             </div>
           </div>
 
           {/* Lista de líderes atuais */}
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm">Líderes Atuais</h4>
+          <div className="space-y-3">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-primary" />
+              Líderes Atuais
+            </h4>
             {leaders.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Nenhum líder atribuído a esta categoria.
-              </p>
+              <div className="py-12 text-center border-2 border-dashed rounded-xl bg-muted/30">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Nenhum líder atribuído a esta categoria.
+                </p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {leaders.map((leader) => (
                   <div
                     key={leader.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border rounded-xl hover:bg-muted/50 transition-all duration-300 shadow-sm hover:shadow-md bg-background/50 backdrop-blur-sm"
                   >
-                    <div className="flex items-center gap-3">
-                      <Avatar>
+                    <div className="flex items-center gap-3 flex-1">
+                      <Avatar className="h-12 w-12 border-2 border-primary/20">
                         <AvatarImage src={leader.members.profile_image_url || undefined} />
-                        <AvatarFallback>{leader.members.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-semibold">
+                          {leader.members.name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="font-medium">{leader.members.name}</p>
-                        <Badge variant={getRoleBadgeVariant(leader.role)} className="mt-1 flex items-center gap-1 w-fit">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{leader.members.name}</p>
+                        <Badge 
+                          variant={getRoleBadgeVariant(leader.role)} 
+                          className="mt-1.5 flex items-center gap-1.5 w-fit shadow-sm"
+                        >
                           {getRoleIcon(leader.role)}
-                          <span className="capitalize">{leader.role}</span>
+                          <span className="capitalize font-medium">{leader.role}</span>
                         </Badge>
                       </div>
                     </div>
@@ -294,9 +327,10 @@ export function CategoryLeadersDialog({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveLeader(leader.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300 w-full sm:w-auto"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 sm:mr-0 mr-2" />
+                      <span className="sm:hidden">Remover</span>
                     </Button>
                   </div>
                 ))}
