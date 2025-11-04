@@ -244,31 +244,13 @@ export default function GroupDetails() {
 
         {/* Header do grupo com gradiente */}
         <div className="space-y-4 mb-6 animate-scale-in">
-          <div className="flex items-center space-x-4">
-            <div className="relative group">
-              <div className="absolute inset-0 gradient-primary rounded-2xl blur-xl opacity-50 
-                              group-hover:opacity-100 transition-opacity" />
-              <div className="relative w-20 h-20 gradient-primary rounded-2xl flex items-center 
-                              justify-center shadow-strong group-hover:scale-110 
-                              transition-transform duration-500">
-                <Building className="w-10 h-10 text-white" />
-              </div>
-              {group.is_active && (
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-success rounded-full 
-                                border-4 border-white animate-pulse shadow-glow-accent" />
-              )}
-            </div>
-            
+          <div className="flex items-center space-x-4">            
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary 
                                bg-clip-text text-transparent">
                   {group.name}
                 </h1>
-                <Badge variant={group.is_active ? "success" : "secondary"} 
-                       className="text-sm px-3 py-1">
-                  {group.is_active ? "Ativo" : "Inativo"}
-                </Badge>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="w-5 h-5" />
@@ -278,7 +260,7 @@ export default function GroupDetails() {
           </div>
           
           {/* Botões de ação com gradientes */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 justify-center mt-5">
             <Button
               variant="outline"
               onClick={() => navigate(`/groups/${id}/edit`)}
@@ -312,7 +294,7 @@ export default function GroupDetails() {
 
         {/* Tabs modernizadas */}
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
+          <TabsList className="grid w-full grid-cols-4 h-12 bg-gradient-to-r from-muted/50 to-muted/30 
                                rounded-xl border-2 border-primary/10 shadow-soft">
             <TabsTrigger value="info"
                          className="rounded-lg data-[state=active]:gradient-primary 
@@ -353,9 +335,6 @@ export default function GroupDetails() {
                       <Users className="w-5 h-5 text-primary" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground">Liderança</h3>
-                    <Badge variant="outline" className="ml-auto border-primary/20 text-primary">
-                      {leadersCount}/5 Posições Preenchidas
-                    </Badge>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
