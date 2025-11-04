@@ -21,7 +21,7 @@ interface GroupCardProps {
 
 export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
   return (
-    <Card className="group relative overflow-hidden card-modern border-l-4 border-l-primary">
+    <Card className="group relative overflow-hidden card-elevated border-2 border-border hover:border-primary/50 transition-all duration-300">
       {/* Efeito de luz de fundo */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl 
                       opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

@@ -92,34 +92,22 @@ export function GroupsList() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4 mb-8">
-        <h1 className="text-xl font-bold text-foreground">
-          Gestão de Grupos
-        </h1>
-        <p className="text-muted-foreground">
-          Localiza o teu grupo e clica em ver detalhes para explorar mais informações
-        </p>
-      </div>
-
       {/* Filters */}
-      <Card className="card-elevated">
-        <div className="p-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Buscar por nome, município ou província..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline">
-              <Filter className="w-4 h-4" />
-              Filtros
-            </Button>
+      <Card className="card-elevated p-4">
+        <div className="flex items-center space-x-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Buscar por nome, município ou província..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          <Button variant="outline">
+            <Filter className="w-4 h-4" />
+            Filtros
+          </Button>
         </div>
       </Card>
 
