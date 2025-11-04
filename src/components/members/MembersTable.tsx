@@ -37,11 +37,11 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
         </TableHeader>
         <TableBody>
           {members.map((member, index) => (
-            <TableRow key={member.id} className="h-16 border-b border-primary/5 hover:bg-primary/5 transition-colors">
-              <TableCell className="text-center font-semibold text-sm py-3 border-r border-primary/10 text-foreground">
+            <TableRow key={member.id} className="border-b border-primary/5 hover:bg-primary/5 transition-colors">
+              <TableCell className="text-center font-semibold text-sm border-r border-primary/10 text-foreground">
                 {index + 1}
               </TableCell>
-              <TableCell className="text-center py-3 border-r border-primary/10">
+              <TableCell className="text-center border-r border-primary/10">
                 <Dialog>
                   <DialogTrigger asChild>
                     <div className="cursor-pointer hover:scale-110 transition-transform">
@@ -75,7 +75,7 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
                   </DialogContent>
                 </Dialog>
               </TableCell>
-              <TableCell className="py-3">
+              <TableCell>
                 <Button
                   variant="ghost"
                   onClick={() => onMemberView(member.id)}
