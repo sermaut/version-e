@@ -7,11 +7,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown, Eye, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useEffect } from "react";
 
 interface Member {
   id: string;
@@ -39,6 +41,9 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [expandedPartitions, setExpandedPartitions] = useState<Set<string>>(new Set());
+  const [showRecordsDialog, setShowRecordsDialog] = useState(false);
+  const [monthlyRecords, setMonthlyRecords] = useState<any[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
   const { toast } = useToast();
 
   // Filter only active members
@@ -140,6 +145,55 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     );
   };
 
+  const loadMonthlyRecords = async () => {
+    setLoadingRecords(true);
+    try {
+      const currentMonth = format(new Date(), 'yyyy-MM');
+      
+      const { data, error } = await supabase
+        .from('rehearsal_attendance')
+        .select(`
+          *,
+          member:members(name, partition)
+        `)
+        .eq('group_id', groupId)
+        .eq('month_year', currentMonth)
+        .order('rehearsal_date', { ascending: false });
+
+      if (error) throw error;
+      
+      const groupedByDate = data.reduce((acc: any, record: any) => {
+        const dateKey = record.rehearsal_date;
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
+        }
+        acc[dateKey].push(record);
+        return acc;
+      }, {});
+      
+      setMonthlyRecords(Object.entries(groupedByDate).map(([date, records]) => ({
+        date,
+        records,
+        count: (records as any[]).length
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar registros:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os registros",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingRecords(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showRecordsDialog) {
+      loadMonthlyRecords();
+    }
+  }, [showRecordsDialog]);
+
   const handleSave = async () => {
     if (!date) {
       toast({
@@ -162,32 +216,44 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     setSaving(true);
 
     try {
-      // TODO: Create table rehearsal_attendance if not exists
-      // For now, we'll just show a success message
+      const monthYear = format(date, 'yyyy-MM');
       const attendanceRecords = Array.from(selectedMembers).map(memberId => ({
         group_id: groupId,
         member_id: memberId,
         rehearsal_date: format(date, "yyyy-MM-dd"),
+        month_year: monthYear,
         created_at: new Date().toISOString(),
       }));
 
-      console.log("Attendance records to save:", attendanceRecords);
+      const { error } = await supabase
+        .from('rehearsal_attendance')
+        .insert(attendanceRecords);
+
+      if (error) throw error;
 
       toast({
         title: "Sucesso",
         description: `Presença registrada para ${selectedMembers.size} membros em ${format(date, "dd/MM/yyyy", { locale: pt })}`,
       });
 
-      // Reset form
       setSelectedMembers(new Set());
       setDate(undefined);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar presença:", error);
-      toast({
-        title: "Erro",
-        description: "Falha ao registrar presença. Tente novamente.",
-        variant: "destructive",
-      });
+      
+      if (error.code === '23505') {
+        toast({
+          title: "Atenção",
+          description: "Já existe um registro para esta data. Use o botão 'Ver Registros' para visualizar.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Falha ao registrar presença. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -196,32 +262,43 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   return (
     <div className="space-y-6">
       <Card className="border-2 border-primary/10 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <CardTitle className="text-foreground flex items-center gap-2">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 pb-3">
+          <div className="flex flex-col gap-3">
+            <CardTitle className="text-foreground flex items-center justify-center gap-2 text-base">
               <Music className="w-5 h-5 text-primary" />
-              Registro de Presença nos Ensaios
+              Registros de Presença nos Ensaios
             </CardTitle>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="border-primary/20">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  locale={pt}
-                  disabled={(date) => date > new Date()}
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="border-primary/20 text-sm h-9">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    locale={pt}
+                    disabled={(date) => date > new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowRecordsDialog(true)}
+                className="border-primary/20 text-sm h-9"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Ver Registros
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-3">
           <div className="space-y-6">
             {sortedPartitions.map((partition) => {
               const partitionMembers = membersByPartition[partition];
@@ -363,6 +440,62 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog de Registros Mensais */}
+      <Dialog open={showRecordsDialog} onOpenChange={setShowRecordsDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              Registros de {format(new Date(), 'MMMM yyyy', { locale: pt })}
+            </DialogTitle>
+            <DialogDescription>
+              Visualize todos os registros de presença deste mês
+            </DialogDescription>
+          </DialogHeader>
+          
+          {loadingRecords ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+            </div>
+          ) : monthlyRecords.length === 0 ? (
+            <div className="text-center py-12">
+              <Music className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">Nenhum registro encontrado neste mês</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {monthlyRecords.map((record) => (
+                <Card key={record.date} className="border-primary/10">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm">
+                        {format(new Date(record.date), "dd 'de' MMMM 'de' yyyy", { locale: pt })}
+                      </CardTitle>
+                      <Badge variant="outline" className="border-primary/20">
+                        {record.count} {record.count === 1 ? 'presente' : 'presentes'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {record.records.map((r: any) => (
+                        <div 
+                          key={r.id}
+                          className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg text-sm"
+                        >
+                          <Users className="w-3 h-3 text-primary flex-shrink-0" />
+                          <span className="truncate">{r.member.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

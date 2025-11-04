@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, X, Image as ImageIcon, Music, Loader2, FileText, Camera } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Music, Loader2, FileText, Camera, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface WeeklyProgram {
@@ -28,12 +28,61 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>(program.image_url);
   const [audioPreview, setAudioPreview] = useState<string | null>(program.audio_url);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const file = new File([blob], `recording_${Date.now()}.mp3`, { type: 'audio/mp3' });
+        setAudioFile(file);
+        
+        const audioUrl = URL.createObjectURL(blob);
+        setAudioPreview(audioUrl);
+        
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      
+      toast({
+        title: "Gravação iniciada",
+        description: "Clique novamente para parar",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível acessar o microfone",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setMediaRecorder(null);
+      toast({
+        title: "Gravação finalizada",
+        description: "Áudio salvo com sucesso",
+      });
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -315,16 +364,28 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
               </label>
             </div>
             <div className="space-y-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => audioInputRef.current?.click()}
-                disabled={uploading}
-                className="w-full border-primary/20 hover:border-primary hover:bg-primary/5"
-              >
-                <Music className="w-4 h-4 mr-2" />
-                {audioFile ? "Alterar Áudio" : "Adicionar/Alterar Áudio"}
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => audioInputRef.current?.click()}
+                  disabled={uploading}
+                  className="border-primary/20 hover:border-primary hover:bg-primary/5"
+                >
+                  <Music className="w-4 h-4 mr-2" />
+                  Arquivo
+                </Button>
+                <Button
+                  type="button"
+                  variant={isRecording ? "destructive" : "outline"}
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={uploading}
+                  className={!isRecording ? "border-primary/20 hover:border-primary hover:bg-primary/5" : ""}
+                >
+                  <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-pulse' : ''}`} />
+                  {isRecording ? "Parar" : "Gravar"}
+                </Button>
+              </div>
               <input
                 ref={audioInputRef}
                 type="file"
@@ -335,7 +396,7 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
               {audioPreview && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium truncate">
                       {audioFile ? audioFile.name : "Áudio atual"}
                     </span>
                     {audioFile && (
@@ -343,7 +404,7 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-destructive/10"
+                        className="hover:bg-destructive/10 flex-shrink-0"
                         onClick={() => {
                           setAudioFile(null);
                           setAudioPreview(program.audio_url);

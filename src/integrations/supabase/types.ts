@@ -568,6 +568,58 @@ export type Database = {
           },
         ]
       }
+      rehearsal_attendance: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          group_id: string
+          id: string
+          member_id: string
+          month_year: string
+          rehearsal_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          group_id: string
+          id?: string
+          member_id: string
+          month_year: string
+          rehearsal_date: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          member_id?: string
+          month_year?: string
+          rehearsal_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rehearsal_attendance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehearsal_attendance_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehearsal_attendance_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_admins: {
         Row: {
           access_attempts: number | null
@@ -685,6 +737,7 @@ export type Database = {
         Args: { p_category_id: string; p_member_id: string }
         Returns: boolean
       }
+      clean_old_rehearsal_records: { Args: never; Returns: undefined }
       generate_admin_code: { Args: { prefix?: string }; Returns: string }
       soft_delete_expired_weekly_programs: { Args: never; Returns: undefined }
     }

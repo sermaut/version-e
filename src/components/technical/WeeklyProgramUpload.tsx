@@ -29,11 +29,56 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   
   const { toast } = useToast();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const maxDimension = 1920;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = (height / width) * maxDimension;
+              width = maxDimension;
+            } else {
+              width = (width / height) * maxDimension;
+              height = maxDimension;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Falha na compressão'));
+            }
+          }, 'image/jpeg', 0.85);
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
     const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     if (!validImageTypes.includes(file.type)) {
       toast({
@@ -44,24 +89,33 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       return;
     }
 
-    // Check file size (max 4MB)
-    if (file.size > 4 * 1024 * 1024) {
+    let finalFile = file;
+    
+    if (file.size > 1024 * 1024) {
+      try {
+        finalFile = await compressImage(file);
+        console.log('Imagem comprimida:', file.size, '->', finalFile.size);
+      } catch (error) {
+        console.error('Erro ao comprimir:', error);
+      }
+    }
+
+    if (finalFile.size > 4 * 1024 * 1024) {
       toast({
         title: "Erro",
-        description: "A imagem deve ter no máximo 4MB",
+        description: "A imagem deve ter no máximo 4MB mesmo após compressão",
         variant: "destructive",
       });
       return;
     }
 
-    setImageFile(file);
+    setImageFile(finalFile);
     
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(finalFile);
   };
 
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,15 +255,26 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       const imageExt = imageFile.name.split('.').pop();
       const imagePath = `${groupId}/${Date.now()}_image.${imageExt}`;
       
+      console.log('Tamanho da imagem:', imageFile.size, 'bytes');
       console.log('Iniciando upload de imagem:', imagePath);
       
       const { error: imageError } = await supabase.storage
         .from('weekly-programs')
-        .upload(imagePath, imageFile);
+        .upload(imagePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (imageError) {
         console.error('Erro detalhado no upload de imagem:', imageError);
-        throw new Error(`Erro ao enviar imagem: ${imageError.message}`);
+        
+        if (imageError.message.includes('exceeded')) {
+          throw new Error('Imagem muito grande. O limite é 4MB. Tente usar uma imagem menor ou de menor qualidade.');
+        } else if (imageError.message.includes('duplicate')) {
+          throw new Error('Já existe um arquivo com este nome. Por favor, tente novamente.');
+        } else {
+          throw new Error(`Erro ao enviar imagem: ${imageError.message}`);
+        }
       }
 
       const { data: imageUrlData } = supabase.storage

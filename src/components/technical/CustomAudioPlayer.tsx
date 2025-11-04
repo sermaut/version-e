@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Settings } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface CustomAudioPlayerProps {
   audioUrl: string;
@@ -14,74 +20,40 @@ export function CustomAudioPlayer({ audioUrl }: CustomAudioPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [playbackRate, setPlaybackRate] = useState(1);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log('🎵 Audio URL:', audioUrl);
-    console.log('🎵 Audio Ref:', audioRef.current);
-
-    if (!audioUrl) {
-      console.warn('⚠️ URL de áudio não fornecida');
-      return;
-    }
-    
-    if (!audioUrl.startsWith('http')) {
-      console.warn('⚠️ URL de áudio pode estar inválida:', audioUrl);
-    }
-
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => setIsPlaying(false);
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleCanPlay = () => setIsLoading(false);
-    const handleError = (e: Event) => {
-      console.error('Erro no elemento de áudio:', e);
-      setIsPlaying(false);
-      setIsLoading(false);
-    };
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('canplay', handleCanPlay);
-    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('canplay', handleCanPlay);
-      audio.removeEventListener('error', handleError);
     };
   }, [audioUrl]);
 
-  const togglePlay = async () => {
+  const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    try {
-      if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
-      } else {
-        await audio.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Erro ao reproduzir áudio:', error);
-      setIsPlaying(false);
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
-  const handleTimeChange = (value: number[]) => {
+  const handleProgressChange = (value: number[]) => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = value[0];
@@ -110,61 +82,76 @@ export function CustomAudioPlayer({ audioUrl }: CustomAudioPlayerProps) {
     }
   };
 
+  const changePlaybackRate = (rate: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = rate;
+    setPlaybackRate(rate);
+  };
+
   const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="space-y-3 p-4 bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-      <audio ref={audioRef} src={audioUrl} preload="metadata" crossOrigin="anonymous" />
+    <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-accent/5 rounded-xl p-4 border-2 border-primary/10 shadow-md">
+      <audio ref={audioRef} src={audioUrl} preload="metadata" />
       
       {/* Controles principais */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-3">
+        {/* Botão Play/Pause */}
         <Button
-          onClick={togglePlay}
-          size="icon"
           variant="default"
-          disabled={isLoading}
-          className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90 shadow-md"
+          size="icon"
+          onClick={togglePlay}
+          className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
         >
-          {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : isPlaying ? (
-            <Pause className="h-5 w-5" />
+          {isPlaying ? (
+            <Pause className="w-5 h-5 fill-white" />
           ) : (
-            <Play className="h-5 w-5 ml-0.5" />
+            <Play className="w-5 h-5 fill-white ml-0.5" />
           )}
         </Button>
 
+        {/* Tempo atual */}
+        <span className="text-sm font-medium text-foreground min-w-[45px]">
+          {formatTime(currentTime)}
+        </span>
+
         {/* Barra de progresso */}
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 group">
           <Slider
             value={[currentTime]}
             max={duration || 100}
             step={0.1}
-            onValueChange={handleTimeChange}
+            onValueChange={handleProgressChange}
             className="cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
         </div>
 
+        {/* Duração total */}
+        <span className="text-sm text-muted-foreground min-w-[45px] text-right">
+          {formatTime(duration)}
+        </span>
+      </div>
+
+      {/* Controles secundários */}
+      <div className="flex items-center justify-between gap-2">
         {/* Controle de volume */}
-        <div className="flex items-center gap-2 w-32">
+        <div className="flex items-center gap-2 flex-1 max-w-[200px]">
           <Button
-            onClick={toggleMute}
-            size="icon"
             variant="ghost"
-            className="h-8 w-8"
+            size="icon"
+            onClick={toggleMute}
+            className="h-8 w-8 hover:bg-primary/10"
           >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="h-4 w-4" />
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
             ) : (
-              <Volume2 className="h-4 w-4" />
+              <Volume2 className="w-4 h-4" />
             )}
           </Button>
           <Slider
@@ -172,9 +159,39 @@ export function CustomAudioPlayer({ audioUrl }: CustomAudioPlayerProps) {
             max={1}
             step={0.01}
             onValueChange={handleVolumeChange}
-            className="cursor-pointer"
+            className="flex-1"
           />
         </div>
+
+        {/* Velocidade de reprodução */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 border-primary/20">
+              <Settings className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">{playbackRate}x</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => changePlaybackRate(0.5)}>
+              0.5x
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changePlaybackRate(0.75)}>
+              0.75x
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changePlaybackRate(1)}>
+              1x (Normal)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changePlaybackRate(1.25)}>
+              1.25x
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changePlaybackRate(1.5)}>
+              1.5x
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changePlaybackRate(2)}>
+              2x
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
