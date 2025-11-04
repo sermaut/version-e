@@ -5,6 +5,7 @@ import { RecentGroups } from "./OptimizedDashboard";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import sigegLogo from "@/assets/sigeg-logo.png";
 
 interface DashboardStats {
   totalGroups: number;
@@ -106,10 +107,12 @@ export function Dashboard() {
       {/* Welcome Header */}
       <div className="text-center space-y-6">
         <div className="flex items-center justify-center space-x-4 mb-6">
-          <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <img 
+            src={sigegLogo} 
+            alt="SIGEG Logo" 
+            className="w-16 h-16 object-contain"
+          />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             Sistema de Gestão de Grupos
           </h1>
         </div>
@@ -118,20 +121,22 @@ export function Dashboard() {
             Plataforma completa para gestão eficiente de grupos musicais em Angola. Administre membros, organize eventos, solicite arranjos e gere relatórios detalhados com segurança e praticidade.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-row gap-3 justify-center">
           <Button 
             variant="gradient" 
-            size="lg"
+            size="default"
+            className="text-sm"
             onClick={() => window.location.href = "/groups"}
           >
-            <Users className="w-5 h-5" />
+            <Users className="w-4 h-4" />
             Ver Grupos
           </Button>
           <Button 
             variant="outline" 
-            size="lg"
+            size="default"
+            className="text-sm"
           >
-            <Activity className="w-5 h-5" />
+            <Activity className="w-4 h-4" />
             Saiba Mais
           </Button>
         </div>
