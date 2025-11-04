@@ -48,17 +48,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { name, code, icon: UserIcon } = getDisplayInfo();
 
   return (
-    <header className="relative h-16 border-b border-fuchsia-400/20 
-                       bg-gradient-to-r from-purple-700/90 via-violet-700/90 to-purple-800/90 
-                       backdrop-blur-xl shadow-lg shadow-purple-500/20 sticky top-0 z-50
+    <header className="relative h-16 border-b border-cyan-400/20 
+                       bg-gradient-to-r from-cyan-700/92 via-blue-700/92 to-teal-700/92 
+                       backdrop-blur-xl shadow-xl shadow-cyan-500/15 sticky top-0 z-50
                        supports-[backdrop-filter]:bg-background/95">
       
       {/* Linha decorativa superior */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500/80 via-purple-400/80 to-fuchsia-500/80" />
-      
-      {/* Linha decorativa superior */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r 
-                      from-transparent via-primary to-transparent opacity-50" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400/80 via-blue-400/80 to-cyan-400/80" />
       
       <div className="flex items-center justify-between h-full px-3 md:px-6">
         {/* Mobile menu button */}
@@ -78,8 +74,8 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Music className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground leading-tight">SIGEG-BV</span>
-            <span className="text-xs text-muted-foreground leading-tight">Sistema de Gestão</span>
+            <span className="text-sm font-bold text-white leading-tight">SIGEG-BV</span>
+            <span className="text-xs text-cyan-100 leading-tight">Sistema de Gestão</span>
           </div>
         </div>
 
@@ -117,21 +113,21 @@ export function Header({ onMenuClick }: HeaderProps) {
           <div className="flex items-center space-x-2 md:space-x-3">
             {/* User info */}
             <div className="text-right hidden sm:block">
-              <p className="text-xs md:text-sm font-semibold text-foreground leading-tight">
+              <p className="text-xs md:text-sm font-semibold text-white leading-tight">
                 {name}
               </p>
               <div className="flex items-center justify-end space-x-1">
-                <p className="text-xs text-muted-foreground">Código:</p>
+                <p className="text-xs text-cyan-100">Código:</p>
                 {showCode ? (
-                  <span className="text-xs text-primary font-mono font-semibold">{code}</span>
+                  <span className="text-xs text-white font-mono font-semibold">{code}</span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">••••••</span>
+                  <span className="text-xs text-cyan-100">••••••</span>
                 )}
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowCode(!showCode)}
-                  className="h-4 w-4 p-0 text-muted-foreground hover:text-primary transition-colors"
+                  className="h-4 w-4 p-0 text-cyan-100 hover:text-white transition-colors"
                 >
                   {showCode ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                 </Button>
