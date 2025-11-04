@@ -49,7 +49,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header className="relative h-16 border-b border-primary/10 
-                       bg-gradient-to-r from-primary/8 via-primary/5 to-accent/8 
+                       bg-gradient-to-r from-teal-500/20 via-teal-400/15 to-cyan-500/20 
                        backdrop-blur-xl shadow-medium sticky top-0 z-50
                        supports-[backdrop-filter]:bg-background/95">
       

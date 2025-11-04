@@ -7,6 +7,16 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   ArrowLeft,
   Edit,
@@ -23,7 +33,9 @@ import {
   Crown,
   AlertTriangle,
   Eye,
-  EyeOff
+  EyeOff,
+  UserCheck,
+  UserX
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -66,6 +78,7 @@ export default function MemberDetails() {
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMemberCode, setShowMemberCode] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -108,37 +121,39 @@ export default function MemberDetails() {
     }
   }
 
-  const handleSoftDelete = async () => {
+  const handleSoftDelete = () => {
+    setStatusDialogOpen(true);
+  };
+
+  const confirmSoftDelete = async () => {
     if (!member) return;
     
-    const confirmMessage = `Tem certeza que deseja ${member.is_active ? 'desativar' : 'reativar'} o membro ${member.name}?`;
-    
-    if (confirm(confirmMessage)) {
-      try {
-        const { error } = await supabase
-          .from('members')
-          .update({ 
-            is_active: !member.is_active,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', member.id);
-        
-        if (error) throw error;
-        
-        toast({
-          title: `Membro ${!member.is_active ? 'reativado' : 'desativado'} com sucesso!`,
-        });
-        
-        // Reload member data
-        loadMemberDetails();
-      } catch (error) {
-        console.error('Erro ao alterar status do membro:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao alterar status do membro",
-          variant: "destructive",
-        });
-      }
+    try {
+      const { error } = await supabase
+        .from('members')
+        .update({ 
+          is_active: !member.is_active,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', member.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: member.is_active ? "Membro desativado" : "Membro reativado",
+        description: `${member.name} foi ${member.is_active ? 'desativado' : 'reativado'} com sucesso.`,
+      });
+      
+      loadMemberDetails();
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao alterar status do membro",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusDialogOpen(false);
     }
   };
 
@@ -475,6 +490,40 @@ export default function MemberDetails() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Status Change Confirmation Dialog */}
+        <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                  {member?.is_active ? (
+                    <UserX className="w-6 h-6 text-warning" />
+                  ) : (
+                    <UserCheck className="w-6 h-6 text-success" />
+                  )}
+                </div>
+                <AlertDialogTitle>
+                  {member?.is_active ? 'Desativar Membro' : 'Reativar Membro'}
+                </AlertDialogTitle>
+              </div>
+              <AlertDialogDescription>
+                Tem certeza que deseja {member?.is_active ? 'desativar' : 'reativar'} {member?.name}?
+                {member?.is_active && ' O membro não poderá mais acessar o sistema.'}
+                {!member?.is_active && ' O membro poderá voltar a acessar o sistema.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmSoftDelete}
+                className={member?.is_active ? "bg-warning hover:bg-warning/90" : "bg-success hover:bg-success/90"}
+              >
+                {member?.is_active ? 'Desativar' : 'Reativar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

@@ -7,6 +7,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Building, 
@@ -22,7 +32,9 @@ import {
   Activity,
   Filter,
   CreditCard,
-  Info
+  Info,
+  UserCheck,
+  UserX
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MembersTable } from "@/components/members/MembersTable";
@@ -73,6 +85,8 @@ export default function GroupDetails() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshPrograms, setRefreshPrograms] = useState(0);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [memberToToggle, setMemberToToggle] = useState<{ id: string; isActive: boolean } | null>(null);
 
   // Obter ID do membro atual se for membro
   const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
@@ -163,36 +177,43 @@ export default function GroupDetails() {
     navigate(`/members/${memberId}/edit`);
   };
 
-  const handleMemberToggleStatus = async (memberId: string) => {
+  const handleMemberToggleStatus = (memberId: string) => {
     const member = members.find(m => m.id === memberId);
     if (!member) return;
-
-    const newStatus = !member.is_active;
-    const action = newStatus ? 'ativar' : 'desativar';
     
-    if (confirm(`Tem certeza que deseja ${action} este membro?`)) {
-      try {
-        const { error } = await supabase
-          .from('members')
-          .update({ is_active: newStatus })
-          .eq('id', memberId);
-        
-        if (error) throw error;
-        
-        toast({
-          title: `Membro ${newStatus ? 'ativado' : 'desativado'} com sucesso!`,
-        });
-        
-        // Reload members
-        loadGroupDetails();
-      } catch (error) {
-        console.error('Erro ao alterar status do membro:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao alterar status do membro",
-          variant: "destructive",
-        });
-      }
+    setMemberToToggle({ id: memberId, isActive: member.is_active });
+    setStatusDialogOpen(true);
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!memberToToggle) return;
+    
+    const newStatus = !memberToToggle.isActive;
+    
+    try {
+      const { error } = await supabase
+        .from('members')
+        .update({ is_active: newStatus })
+        .eq('id', memberToToggle.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: newStatus ? "Membro ativado" : "Membro desativado",
+        description: `O membro foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
+      });
+      
+      loadGroupDetails();
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao alterar status do membro",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusDialogOpen(false);
+      setMemberToToggle(null);
     }
   };
 
@@ -498,6 +519,40 @@ export default function GroupDetails() {
             </Tabs>
           </TabsContent>
         </Tabs>
+
+        {/* Status Change Confirmation Dialog */}
+        <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                  {memberToToggle?.isActive ? (
+                    <UserX className="w-6 h-6 text-warning" />
+                  ) : (
+                    <UserCheck className="w-6 h-6 text-success" />
+                  )}
+                </div>
+                <AlertDialogTitle>
+                  {memberToToggle?.isActive ? 'Desativar Membro' : 'Ativar Membro'}
+                </AlertDialogTitle>
+              </div>
+              <AlertDialogDescription>
+                Tem certeza que deseja {memberToToggle?.isActive ? 'desativar' : 'ativar'} este membro?
+                {memberToToggle?.isActive && ' O membro não poderá mais acessar o sistema.'}
+                {!memberToToggle?.isActive && ' O membro poderá voltar a acessar o sistema.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmToggleStatus}
+                className={memberToToggle?.isActive ? "bg-warning hover:bg-warning/90" : "bg-success hover:bg-success/90"}
+              >
+                {memberToToggle?.isActive ? 'Desativar' : 'Ativar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

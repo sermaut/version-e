@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Plus, Calendar, DollarSign, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentEventDialog } from "./PaymentEventDialog";
 import { PaymentEventDetails } from "./PaymentEventDetails";
@@ -22,6 +32,8 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,39 +75,47 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
     setShowEditDialog(true);
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm("Tem certeza que deseja eliminar este evento? Esta ação não pode ser desfeita.")) {
-      return;
-    }
+  const handleDeleteEvent = (eventId: string) => {
+    setEventToDelete(eventId);
+    setDeleteDialogOpen(true);
+  };
 
+  const confirmDeleteEvent = async () => {
+    if (!eventToDelete) return;
+    
     try {
       // Primeiro, deletar todos os pagamentos relacionados
       const { error: paymentsError } = await supabase
         .from("member_payments")
         .delete()
-        .eq("payment_event_id", eventId);
+        .eq("payment_event_id", eventToDelete);
 
       if (paymentsError) throw paymentsError;
 
-      // Depois, deletar o evento
+      // Então, deletar o evento
       const { error: eventError } = await supabase
         .from("payment_events")
         .delete()
-        .eq("id", eventId);
+        .eq("id", eventToDelete);
 
       if (eventError) throw eventError;
 
       toast({
-        title: "Evento eliminado com sucesso!",
+        title: "Evento eliminado",
+        description: "O evento e os pagamentos relacionados foram removidos com sucesso.",
       });
 
       loadEvents();
     } catch (error) {
       console.error("Erro ao eliminar evento:", error);
       toast({
-        title: "Erro ao eliminar evento",
+        title: "Erro",
+        description: "Não foi possível eliminar o evento.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setEventToDelete(null);
     }
   };
 
@@ -231,6 +251,32 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
         event={editingEvent}
         onEventUpdated={handleEventUpdated}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-destructive" />
+              </div>
+              <AlertDialogTitle>Eliminar Evento</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription>
+              Tem certeza que deseja eliminar este evento? Esta ação não pode ser desfeita e todos os pagamentos relacionados serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteEvent}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
