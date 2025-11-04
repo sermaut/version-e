@@ -29,10 +29,10 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
     <div className="rounded-xl overflow-hidden border-[1.3px] border-primary/20 shadow-soft">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gradient-to-r from-cyan-500/90 to-teal-500/90 hover:from-cyan-500 hover:to-teal-500 border-0">
-            <TableHead className="w-16 text-center text-sm font-semibold text-white border-r border-white/20">Nº</TableHead>
-            <TableHead className="w-24 text-center text-sm font-semibold text-white border-r border-white/20">FOTO</TableHead>
-            <TableHead className="text-sm font-semibold text-white">NOME COMPLETO</TableHead>
+          <TableRow className="bg-cyan-100 hover:bg-cyan-200 border-0 transition-colors">
+            <TableHead className="w-16 text-center text-sm font-semibold text-cyan-900 border-r border-cyan-200">Nº</TableHead>
+            <TableHead className="w-24 text-center text-sm font-semibold text-cyan-900 border-r border-cyan-200">FOTO</TableHead>
+            <TableHead className="text-sm font-semibold text-cyan-900">NOME COMPLETO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
