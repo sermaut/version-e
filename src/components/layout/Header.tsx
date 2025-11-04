@@ -48,8 +48,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { name, code, icon: UserIcon } = getDisplayInfo();
 
   return (
-    <header className="relative h-16 border-b border-cyan-400/20 
-                       bg-gradient-to-r from-cyan-700/92 via-blue-700/92 to-teal-700/92 
+    <header className="relative h-16 border-b border-cyan-500/25 
+                       bg-gradient-to-r from-slate-900/95 via-cyan-950/95 to-blue-950/95 
                        backdrop-blur-xl shadow-xl shadow-cyan-500/15 sticky top-0 z-50
                        supports-[backdrop-filter]:bg-background/95">
       
