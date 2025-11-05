@@ -443,11 +443,11 @@ export type Database = {
           member_code: string | null
           name: string
           neighborhood: string | null
-          partition: Database["public"]["Enums"]["member_partition"] | null
+          partition: string | null
           phone: string | null
           profession: string | null
           profile_image_url: string | null
-          role: Database["public"]["Enums"]["member_role"] | null
+          role: string | null
           updated_at: string
         }
         Insert: {
@@ -463,11 +463,11 @@ export type Database = {
           member_code?: string | null
           name: string
           neighborhood?: string | null
-          partition?: Database["public"]["Enums"]["member_partition"] | null
+          partition?: string | null
           phone?: string | null
           profession?: string | null
           profile_image_url?: string | null
-          role?: Database["public"]["Enums"]["member_role"] | null
+          role?: string | null
           updated_at?: string
         }
         Update: {
@@ -483,11 +483,11 @@ export type Database = {
           member_code?: string | null
           name?: string
           neighborhood?: string | null
-          partition?: Database["public"]["Enums"]["member_partition"] | null
+          partition?: string | null
           phone?: string | null
           profession?: string | null
           profile_image_url?: string | null
-          role?: Database["public"]["Enums"]["member_role"] | null
+          role?: string | null
           updated_at?: string
         }
         Relationships: [
