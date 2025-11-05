@@ -281,8 +281,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="border-primary/20 text-sm h-9">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                  <Button variant="outline" className="border-primary/20 text-xs h-8 px-2.5">
+                    <CalendarIcon className="mr-1.5 h-4 w-4" />
                     {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
                   </Button>
                 </PopoverTrigger>
@@ -300,9 +300,9 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
               <Button
                 variant="outline"
                 onClick={() => setShowRecordsDialog(true)}
-                className="border-primary/20 text-sm h-9"
+                className="border-primary/20 text-xs h-8 px-2.5"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-1.5 h-4 w-4" />
                 Ver Registros
               </Button>
             </div>
