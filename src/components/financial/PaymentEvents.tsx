@@ -20,6 +20,8 @@ import { PaymentEventDetails } from "./PaymentEventDetails";
 import { PaymentEventEditDialog } from "./PaymentEventEditDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 interface PaymentEventsProps {
   groupId: string;
@@ -35,6 +37,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const permissions = usePermissions();
 
   useEffect(() => {
     loadEvents();
@@ -135,13 +138,15 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
         <div>
           <h3 className="text-lg font-semibold">Eventos de Pagamento</h3>
         </div>
-        <Button 
-          onClick={() => setShowEventDialog(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Evento
-        </Button>
+        <PermissionGuard require="canCreatePaymentEvent">
+          <Button 
+            onClick={() => setShowEventDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Evento
+          </Button>
+        </PermissionGuard>
       </div>
 
       {/* Events List */}
@@ -174,26 +179,28 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEditEvent(event)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteEvent(event.id)}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {permissions.canEditPaymentEvent && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteEvent(event.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </CardHeader>
               <CardContent 

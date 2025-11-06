@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon, Music, Loader2, FileText, Camera, Mic, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface WeeklyProgramUploadProps {
   groupId: string;
@@ -28,6 +29,19 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
+  const permissions = usePermissions();
+
+  const handleOpenChange = (open: boolean) => {
+    if (open && !permissions.canAddWeeklyProgram) {
+      toast({
+        title: "Acesso restrito",
+        description: "Só os Dirigentes podem adicionar programa",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsOpen(open);
+  };
 
   const compressImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
@@ -329,7 +343,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
       <Card className="border-2 border-primary/10 shadow-lg overflow-hidden">
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-primary/5 transition-colors bg-gradient-to-r from-primary/5 to-accent/5">

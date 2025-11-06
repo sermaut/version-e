@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 interface Member {
   id: string;
@@ -73,6 +75,7 @@ export default function MemberDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const permissions = usePermissions();
   
   const [member, setMember] = useState<Member | null>(null);
   const [group, setGroup] = useState<Group | null>(null);
@@ -266,19 +269,23 @@ export default function MemberDetails() {
             <h1 className="text-xl font-bold text-foreground mb-4">{member.name}</h1>
             
             <div className="flex items-center justify-center space-x-3 mb-6">
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/members/${member.id}/edit`)}
-              >
-                <Edit className="w-4 h-4" />
-                Editar
-              </Button>
-              <Button
-                variant={member.is_active ? "destructive" : "default"}
-                onClick={handleSoftDelete}
-              >
-                {member.is_active ? "Desativar" : "Reativar"}
-              </Button>
+              <PermissionGuard require="canEditMember">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/members/${member.id}/edit`)}
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard require="canToggleMemberStatus">
+                <Button
+                  variant={member.is_active ? "destructive" : "default"}
+                  onClick={handleSoftDelete}
+                >
+                  {member.is_active ? "Desativar" : "Reativar"}
+                </Button>
+              </PermissionGuard>
             </div>
           </div>
         </Card>
@@ -334,7 +341,7 @@ export default function MemberDetails() {
                     </div>
                   )}
 
-                  {member.phone && (
+                  {permissions.canViewMemberPhone && member.phone && (
                     <div className="flex items-center space-x-3">
                       <Phone className="w-4 h-4 text-muted-foreground" />
                       <div>
@@ -413,7 +420,7 @@ export default function MemberDetails() {
                     </div>
                   )}
 
-                  {member.member_code && (
+                  {permissions.canViewMemberCode && member.member_code && (
                     <div className="flex items-center space-x-3">
                       <Shield className="w-4 h-4 text-muted-foreground" />
                       <div className="flex-1">

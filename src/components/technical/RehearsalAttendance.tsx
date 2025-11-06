@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect } from "react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 interface Member {
   id: string;
@@ -45,6 +47,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   const [monthlyRecords, setMonthlyRecords] = useState<any[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions();
 
   // Filter only active members
   const activeMembers = members.filter(m => m.is_active);
@@ -279,23 +282,25 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
               Registros de Presença nos Ensaios
             </CardTitle>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="border-primary/20 text-xs h-8 px-2.5">
-                    <CalendarIcon className="mr-1.5 h-4 w-4" />
-                    {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    locale={pt}
-                    disabled={(date) => date > new Date()}
-                  />
-                </PopoverContent>
-              </Popover>
+              <PermissionGuard require="canSelectRehearsalDate">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="border-primary/20 text-xs h-8 px-2.5">
+                      <CalendarIcon className="mr-1.5 h-4 w-4" />
+                      {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      locale={pt}
+                      disabled={(date) => date > new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </PermissionGuard>
               
               <Button
                 variant="outline"

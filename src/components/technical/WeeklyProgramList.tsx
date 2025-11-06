@@ -6,6 +6,8 @@ import { Trash2, Calendar, Music, FileText, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WeeklyProgramEditDialog } from "./WeeklyProgramEditDialog";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +40,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [editProgram, setEditProgram] = useState<WeeklyProgram | null>(null);
   const { toast } = useToast();
+  const permissions = usePermissions();
 
   useEffect(() => {
     loadPrograms();
@@ -133,22 +136,26 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
                     {program.title}
                   </h3>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditProgram(program)}
-                      className="text-primary hover:text-primary hover:bg-primary/10"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteId(program.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <PermissionGuard require="canEditWeeklyProgram">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditProgram(program)}
+                        className="text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </PermissionGuard>
+                    <PermissionGuard require="canDeleteWeeklyProgram">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteId(program.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </PermissionGuard>
                   </div>
                 </div>
 

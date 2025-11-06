@@ -10,6 +10,7 @@ import { TransactionsList } from "./TransactionsList";
 import { FinancialCategoryCard } from "./FinancialCategoryCard";
 import { useToast } from "@/hooks/use-toast";
 import { useCategoryPermissions } from "@/hooks/useCategoryPermissions";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface FinancialCategoriesProps {
   groupId: string;
@@ -35,6 +36,7 @@ export function FinancialCategories({
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions();
   
   const { canViewBalance, canEdit, loading: permissionsLoading } = useCategoryPermissions(
     selectedCategory?.id,
@@ -67,13 +69,18 @@ export function FinancialCategories({
   };
 
   const handleCategoryClick = async (category: any) => {
-    // Verificar se é admin principal/super admin
-    const isSuperAdmin = userType === 'admin' && 
-      (permissionLevel === 'super_admin' || permissionLevel === 'admin_principal');
-    
-    // Verificar se tem acesso à categoria
-    if (!isSuperAdmin && currentMemberId && category.is_locked) {
-      // Verificar se é líder da categoria
+    // Níveis 2-5 e 7: bloquear acesso
+    if (permissions.level && permissions.level >= 2 && permissions.level !== 6) {
+      toast({
+        title: "Acesso restrito",
+        description: "Apenas Dirigentes e Líderes de Categoria têm acesso aos registros financeiros.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Nível 6: verificar se é líder desta categoria
+    if (permissions.level === 6 && currentMemberId && category.is_locked) {
       const { data: roleData } = await supabase
         .from("category_roles")
         .select("role")
@@ -82,23 +89,10 @@ export function FinancialCategories({
         .eq("is_active", true)
         .maybeSingle();
       
-      // Verificar se é líder do grupo
-      const { data: groupData } = await supabase
-        .from("groups")
-        .select("president_id, vice_president_1_id, vice_president_2_id")
-        .eq("id", groupId)
-        .single();
-      
-      const isGroupLeaderCheck = groupData ? (
-        groupData.president_id === currentMemberId ||
-        groupData.vice_president_1_id === currentMemberId ||
-        groupData.vice_president_2_id === currentMemberId
-      ) : false;
-      
-      if (!roleData && !isGroupLeaderCheck) {
+      if (!roleData) {
         toast({
-          title: "Acesso Negado",
-          description: "Você não tem permissão para acessar este registro financeiro. Entre em contato com um líder do grupo para solicitar acesso.",
+          title: "Acesso restrito",
+          description: "Você só pode acessar categorias onde é líder.",
           variant: "destructive",
         });
         return;

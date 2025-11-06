@@ -18,6 +18,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 import { 
   Building, 
   MapPin, 
@@ -79,6 +81,7 @@ export default function GroupDetails() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isMember } = useAuth();
+  const permissions = usePermissions();
   
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -282,33 +285,39 @@ export default function GroupDetails() {
           
           {/* Botões de ação com gradientes */}
           <div className="flex flex-wrap gap-2 justify-center mt-5">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate(`/groups/${id}/edit`)}
-              className="hover:border-primary hover:text-primary hover:bg-primary/5 transition-all hover:scale-105 h-9 w-9"
-              title="Editar Grupo"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="gradient"
-              size="icon"
-              onClick={() => navigate(`/members/new?groupId=${id}`)}
-              className="hover:shadow-glow h-9 w-9"
-              title="Adicionar Membro"
-            >
-              <UserPlus className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate(`/plans/${id}`)}
-              className="hover:border-accent hover:text-accent hover:bg-accent/5 transition-all hover:scale-105 h-9 w-9"
-              title="Gerenciar Plano"
-            >
-              <CreditCard className="w-4 h-4" />
-            </Button>
+            <PermissionGuard require="canEditGroup">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate(`/groups/${id}/edit`)}
+                className="hover:border-primary hover:text-primary hover:bg-primary/5 transition-all hover:scale-105 h-9 w-9"
+                title="Editar Grupo"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            </PermissionGuard>
+            <PermissionGuard require="canAddMember">
+              <Button
+                variant="gradient"
+                size="icon"
+                onClick={() => navigate(`/members/new?groupId=${id}`)}
+                className="hover:shadow-glow h-9 w-9"
+                title="Adicionar Membro"
+              >
+                <UserPlus className="w-4 h-4" />
+              </Button>
+            </PermissionGuard>
+            <PermissionGuard require="canAccessMonthlyPlans">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate(`/plans/${id}`)}
+                className="hover:border-accent hover:text-accent hover:bg-accent/5 transition-all hover:scale-105 h-9 w-9"
+                title="Gerenciar Plano"
+              >
+                <CreditCard className="w-4 h-4" />
+              </Button>
+            </PermissionGuard>
           </div>
         </div>
 
@@ -418,22 +427,26 @@ export default function GroupDetails() {
                       <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
                       <p className="text-foreground">{members.length} / {group.max_members}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
-                      <p className="text-foreground">{group.monthly_fee} Kz</p>
-                    </div>
+                    {permissions.canViewGroupFinancialInfo && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
+                        <p className="text-foreground">{group.monthly_fee} Kz</p>
+                      </div>
+                    )}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
                       <p className="text-foreground">
                         {new Date(group.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
-                      <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                        {group.access_code || 'Não definido'}
-                      </code>
-                    </div>
+                    {permissions.canViewGroupFinancialInfo && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
+                        <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                          {group.access_code || 'Não definido'}
+                        </code>
+                      </div>
+                    )}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
                       <div className="flex items-center space-x-2">
