@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Plus, Search, Filter, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionGuard } from '@/components/common/PermissionGuard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +26,7 @@ export function GroupsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const permissions = usePermissions();
 
   useEffect(() => {
     loadGroups();
@@ -138,8 +141,8 @@ export function GroupsList() {
               key={group.id}
               group={group}
               onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              onEdit={permissions.canEditGroup ? handleEdit : undefined}
+              onDelete={permissions.canDeleteGroup ? handleDelete : undefined}
             />
           ))}
         </div>
@@ -173,16 +176,18 @@ export function GroupsList() {
       )}
 
       {/* Novo Grupo Button - moved to bottom */}
-      <div className="flex justify-center pt-6">
-        <Button 
-          variant="gradient" 
-          size="lg"
-          onClick={() => window.location.href = "/groups/new"}
-        >
-          <Plus className="w-5 h-5" />
-          Novo Grupo
-        </Button>
-      </div>
+      <PermissionGuard require="canCreateGroup">
+        <div className="flex justify-center pt-6">
+          <Button 
+            variant="gradient" 
+            size="lg"
+            onClick={() => window.location.href = "/groups/new"}
+          >
+            <Plus className="w-5 h-5" />
+            Novo Grupo
+          </Button>
+        </div>
+      </PermissionGuard>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

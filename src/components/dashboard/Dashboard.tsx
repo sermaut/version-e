@@ -5,6 +5,8 @@ import { RecentGroups } from "./OptimizedDashboard";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionGuard } from '@/components/common/PermissionGuard';
 import sigegLogo from "@/assets/sigeg-logo.png";
 
 interface DashboardStats {
@@ -176,17 +178,19 @@ export function Dashboard() {
       <RecentGroups groups={groups} />
       
       {/* Novo Grupo Button at the end */}
-      <div className="flex justify-center pt-8">
-        <Button 
-          variant="gradient" 
-          size="lg" 
-          className="shadow-medium"
-          onClick={() => window.location.href = "/groups/new"}
-        >
-          <Plus className="w-5 h-5" />
-          Novo Grupo
-        </Button>
-      </div>
+      <PermissionGuard require="canCreateGroup">
+        <div className="flex justify-center pt-8">
+          <Button 
+            variant="gradient" 
+            size="lg" 
+            className="shadow-medium"
+            onClick={() => window.location.href = "/groups/new"}
+          >
+            <Plus className="w-5 h-5" />
+            Novo Grupo
+          </Button>
+        </div>
+      </PermissionGuard>
     </div>
   );
 }

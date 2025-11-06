@@ -10,10 +10,14 @@ import {
   LogOut,
   X,
   Shield,
-  CreditCard
+  CreditCard,
+  FileText,
+  Briefcase
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useToast } from "@/hooks/use-toast";
 
 interface SidebarProps {
   className?: string;
@@ -24,23 +28,48 @@ interface SidebarProps {
 export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, hasPermission } = useAuth();
+  const { logout } = useAuth();
+  const permissions = usePermissions();
+  const { toast } = useToast();
+
+  const handleRestrictedClick = (label: string) => {
+    toast({
+      title: "Acesso Negado",
+      description: "Só Administradores têm acesso",
+      variant: "destructive",
+    });
+  };
 
   const navigationItems = [
-    { icon: Home, label: "Dashboard", href: "/" },
-    { icon: Users, label: "Grupos", href: "/groups" },
-    { icon: UserPlus, label: "Novo Grupo", href: "/groups/new" },
-    { icon: CreditCard, label: "Planos Mensais", href: "/plans" },
-    { icon: Music, label: "Serviços Musicais", href: "/services" },
-    { icon: BarChart3, label: "Relatórios", href: "/reports" },
-  ];
-
-  // Add admin management for users with permission
-  if (hasPermission('manage_admins')) {
-    navigationItems.push({ icon: Shield, label: "Administradores", href: "/admin" });
-  }
-
-  navigationItems.push({ icon: Settings, label: "Configurações", href: "/settings" });
+    { icon: Home, label: "Dashboard", href: "/", show: true },
+    { icon: Users, label: "Grupos", href: "/groups", show: true },
+    { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
+    { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
+    { 
+      icon: FileText, 
+      label: "Relatórios", 
+      href: "/reports", 
+      show: true,
+      restricted: !permissions.canAccessReports,
+      onClick: !permissions.canAccessReports ? () => handleRestrictedClick("Relatórios") : undefined
+    },
+    { 
+      icon: Shield, 
+      label: "Administradores", 
+      href: "/admin", 
+      show: true,
+      restricted: !permissions.canAccessAdmins,
+      onClick: !permissions.canAccessAdmins ? () => handleRestrictedClick("Administradores") : undefined
+    },
+    { 
+      icon: Settings, 
+      label: "Configurações", 
+      href: "/settings", 
+      show: true,
+      restricted: !permissions.canAccessSettings,
+      onClick: !permissions.canAccessSettings ? () => handleRestrictedClick("Configurações") : undefined
+    },
+  ].filter(item => item.show);
 
   return (
     <>
@@ -90,8 +119,12 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
                 location.pathname === item.href && "bg-cyan-700/50 border-l-4 border-cyan-400 text-white font-medium"
               )}
               onClick={() => {
-                navigate(item.href);
-                onOpenChange(false); // Close sidebar on mobile after navigation
+                if (item.onClick) {
+                  item.onClick();
+                } else if (!item.restricted) {
+                  navigate(item.href);
+                  onOpenChange(false);
+                }
               }}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />

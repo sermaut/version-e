@@ -217,6 +217,7 @@ export type Database = {
           category_id: string
           created_at: string
           created_by: string | null
+          created_by_member_id: string | null
           description: string
           id: string
           type: string
@@ -227,6 +228,7 @@ export type Database = {
           category_id: string
           created_at?: string
           created_by?: string | null
+          created_by_member_id?: string | null
           description: string
           id?: string
           type: string
@@ -237,6 +239,7 @@ export type Database = {
           category_id?: string
           created_at?: string
           created_by?: string | null
+          created_by_member_id?: string | null
           description?: string
           id?: string
           type?: string
@@ -248,6 +251,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_created_by_member_id_fkey"
+            columns: ["created_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
             referencedColumns: ["id"]
           },
         ]
@@ -533,8 +543,10 @@ export type Database = {
       payment_events: {
         Row: {
           amount_to_pay: number
+          category_id: string | null
           created_at: string
           created_by: string | null
+          created_by_member_id: string | null
           group_id: string
           id: string
           title: string
@@ -542,8 +554,10 @@ export type Database = {
         }
         Insert: {
           amount_to_pay: number
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_member_id?: string | null
           group_id: string
           id?: string
           title: string
@@ -551,14 +565,30 @@ export type Database = {
         }
         Update: {
           amount_to_pay?: number
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_member_id?: string | null
           group_id?: string
           id?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payment_events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_events_created_by_member_id_fkey"
+            columns: ["created_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payment_events_group_id_fkey"
             columns: ["group_id"]
@@ -739,6 +769,15 @@ export type Database = {
       }
       clean_old_rehearsal_records: { Args: never; Returns: undefined }
       generate_admin_code: { Args: { prefix?: string }; Returns: string }
+      get_member_role_level: { Args: { p_member_id: string }; Returns: number }
+      is_category_leader: {
+        Args: { p_category_id: string; p_member_id: string }
+        Returns: boolean
+      }
+      is_group_leader: {
+        Args: { p_group_id: string; p_member_id: string }
+        Returns: boolean
+      }
       soft_delete_expired_weekly_programs: { Args: never; Returns: undefined }
     }
     Enums: {
